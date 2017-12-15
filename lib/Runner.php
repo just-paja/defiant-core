@@ -13,9 +13,14 @@ class Runner {
   ];
 
   public static function getConfig() {
+    if (file_exists('defiantConfig.php')) {
+      require_once 'defiantConfig.php';
+    }
+
     if (function_exists('configDefiant')) {
       return configDefiant();
     }
+
     throw new MissingConfigError();
   }
 
@@ -32,6 +37,10 @@ class Runner {
       $this->databases->replace($config['database']);
     }
 
+    if (isset($config['onDatabaseChange'])) {
+      $this->databases->setOnChange($config['onDatabaseChange']);
+    }
+
     if (isset($config['models'])) {
       $this->models->replace($config['models']);
     }
@@ -44,7 +53,7 @@ class Runner {
     return $this->$attr;
   }
 
-  public function resolveRequest(Request $request) {
+  public function resolveRequest(Http\Request $request) {
     $viewCallback = $this->router->getView($request);
 
     if ($viewCallback) {
@@ -54,7 +63,7 @@ class Runner {
     }
   }
 
-  public function resolveCallback($viewClass, $viewMethod, Request $request, array $context = []) {
+  public function resolveCallback($viewClass, $viewMethod, Http\Request $request, array $context = []) {
     $view = new $viewClass($this);
     $callback = [$view, $viewMethod];
     return call_user_func($callback, $request, $context);
@@ -66,7 +75,7 @@ class Runner {
     echo $content;
   }
 
-  public function serveCallback($viewClass, $viewMethod, Request $request, $status, array $context = []) {
+  public function serveCallback($viewClass, $viewMethod, Http\Request $request, $status, array $context = []) {
     return $this->serve($status, $this->resolveCallback($viewClass, $viewMethod, $request, $context));
   }
 }

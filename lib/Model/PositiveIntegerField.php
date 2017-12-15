@@ -2,6 +2,6 @@
 
 namespace Defiant\Model;
 
-class PositiveIntegerField extends IntegerField {
+class PositiveIntegerField extends Field {
   const isUnsigned = true;
 }

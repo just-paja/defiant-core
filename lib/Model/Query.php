@@ -35,7 +35,7 @@ class Query {
   }
 
   public function first() {
-    $item = $this->limit(0, 1)->select()->fetch(PDO::FETCH_ASSOC);
+    $item = $this->limit(0, 1)->select()->fetch(\PDO::FETCH_ASSOC);
     if ($item) {
       return $this->extend($item);
     }

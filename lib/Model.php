@@ -94,7 +94,7 @@ abstract class Model {
 
     foreach ($fieldDef as $fieldName => $fieldType) {
       $field = static::getFieldFromType($fieldName, $fieldType);
-      if (is_subclass_of($field, 'ModelFieldSet')) {
+      if (is_subclass_of($field, '\Defiant\Model\FieldSet')) {
         $fields = array_merge($fields, self::getFieldsFromDefinition($field->expandFields()));
       } else {
         $fields[] = $field;
@@ -111,7 +111,7 @@ abstract class Model {
   }
 
   public static function getTableName() {
-    return lcfirst(get_called_class());
+    return str_replace(['\\', 'Model'], '', lcfirst(get_called_class()));
   }
 
   public static function hasField($fieldName) {

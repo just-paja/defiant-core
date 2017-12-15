@@ -26,8 +26,8 @@ class SqliteTable extends \Defiant\Database\Table {
         $def["isUnsigned"] = false;
       }
 
-      $field = ModelField::createFromDef($column['name'], $def);
-      $this->columns[] = new DatabaseColumn($this->connection, $this, $field);
+      $field = \Defiant\Model\Field::createFromDef($column['name'], $def);
+      $this->columns[] = new Column($this->connection, $this, $field);
     }
   }
 

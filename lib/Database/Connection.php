@@ -21,14 +21,14 @@ class Connection {
   }
 
   public function connect() {
-    $this->pdo = new PDO($this->dsn, $this->user, $this->password);
-    $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $this->pdo = new \PDO($this->dsn, $this->user, $this->password);
+    $this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
   }
 
   public function query($query, array $params = array()) {
     try {
       $sth = $this->pdo->prepare($query);
-    } catch(PDOException $exception) {
+    } catch(\PDOException $exception) {
       throw new Error($exception->getCode(), $exception->getMessage(), $query, $params);
     }
 
@@ -39,7 +39,7 @@ class Connection {
 
     try {
       $result = $sth->execute($params);
-    } catch(PDOException $exception) {
+    } catch(\PDOException $exception) {
       throw new Error($exception->getCode(), $exception->getMessage(), $query, $params);
     }
 
@@ -54,7 +54,7 @@ class Connection {
   public function exec($query) {
     try {
       $result = $this->pdo->exec($query);
-    } catch(PDOException $exception) {
+    } catch(\PDOException $exception) {
       throw new Error($exception->getCode(), $exception->getMessage(), $query);
     }
 

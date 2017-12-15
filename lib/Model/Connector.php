@@ -52,7 +52,7 @@ class Connector {
   public function getQuery() {
     return new Query(
       $this->database,
-      $this->model::getTableName()
+      $this->model
     );
   }
 }

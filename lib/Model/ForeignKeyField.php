@@ -7,10 +7,10 @@ class ForeignKeyField extends FieldSet {
     $keyFieldName = $this->getKeyFieldName();
     return [
       $this->name => [
-        "type" => "NullField",
+        "type" => "\Defiant\Model\NullField",
         "bindTrough" => $this,
       ],
-      $keyFieldName => "IntegerField",
+      $keyFieldName => "\Defiant\Model\IntegerField",
     ];
   }
 

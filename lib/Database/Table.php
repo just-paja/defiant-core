@@ -15,10 +15,11 @@ abstract class Table {
   protected $onChange = null;
 
 
-  public function __construct(Connection $connection, \Defiant\Database $db, $name, $onChange = null) {
+  public function __construct(Connection $connection, \Defiant\Database $db, $model, callable $onChange = null) {
     $this->connection = $connection;
     $this->db = $db;
-    $this->name = $name;
+    $this->model = $model;
+    $this->name = $model::getTableName();
     $this->onChange = $onChange;
   }
 
@@ -57,8 +58,7 @@ abstract class Table {
   }
 
   public function loadModelFields(): void {
-    $model = $this->name;
-    $this->fields = $model::getFields();
+    $this->fields = $this->model::getFields();
   }
 
   public function findFieldByName($name) {
@@ -86,7 +86,7 @@ abstract class Table {
     foreach ($this->fields as $field) {
       if ($field::dbType) {
         $existingColumn = $this->findColumnByName($field->getName());
-        $columns[] = new DatabaseColumn($this->connection, $this, $field, $existingColumn, $this->onChange);
+        $columns[] = new Column($this->connection, $this, $field, $existingColumn, $this->onChange);
       }
     }
     return $columns;
@@ -111,21 +111,21 @@ abstract class Table {
     return $this->name;
   }
 
-  protected function columnAdd(DatabaseColumn $col) {
+  protected function columnAdd(Column $col) {
     $this->columnsAdd[] = $col;
     $this->triggerChange('TABLE_COLUMN_ADD', $col->getIdent());
   }
 
-  protected function columnChange(DatabaseColumn $col, $changes) {
+  protected function columnChange(Column $col, $changes) {
     $this->columnsChange[] = $col;
     $this->triggerChange('TABLE_COLUMN_CHANGED', $col->getIdent(), $changes);
   }
 
-  protected function columnKeep(DatabaseColumn $col) {
+  protected function columnKeep(Column $col) {
     $this->columnsKeep[] = $col;
   }
 
-  protected function columnRemove(DatabaseColumn $col) {
+  protected function columnRemove(Column $col) {
     $this->columnsRemove[] = $col;
     $this->triggerChange('TABLE_COLUMN_REMOVED', $col->getIdent());
   }

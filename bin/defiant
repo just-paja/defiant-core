@@ -18,7 +18,7 @@ $cmd->argument()
 
 if ($cmd[0]) {
   list($moduleName, $command) = explode(':', $cmd[0]);
-  \Defiant\Console\Dispatcher::run($moduleName, $command);
+  \Defiant\Console\Dispatcher::run($moduleName, $command, $cmd);
 } else {
   $cmd->printHelp();
 }

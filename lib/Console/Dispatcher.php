@@ -7,6 +7,7 @@ class Dispatcher {
     return [
       'db:seed',
       'db:sync',
+      'model:list',
     ];
   }
 
@@ -14,10 +15,12 @@ class Dispatcher {
     if ($module === 'db') {
       return new Database();
     }
+    if ($module === 'model') {
+      return new Model();
+    }
 
     return null;
   }
-
 
   public static function renderBackTrace($trace) {
     ob_start();
@@ -25,13 +28,13 @@ class Dispatcher {
       echo '* in '.($frame['class'] ? $frame['class'].$frame['type'] : '').$frame['function']."()\n";
       echo '  at '.$frame['file'].':'.$frame['line']."\n";
 
-      if (sizeof($frame['args'])) {
-        echo '  with args: '."\n";
-        $argInfo = explode("\n", var_export($frame['args'], true));
-        foreach ($argInfo as $value) {
-          echo '    '.$value."\n";
-        }
-      }
+      // if (sizeof($frame['args'])) {
+      //   echo '  with args: '."\n";
+      //   $argInfo = explode("\n", var_export($frame['args'], true));
+      //   foreach ($argInfo as $value) {
+      //     echo '    '.$value."\n";
+      //   }
+      // }
     }
     return ob_get_clean();
   }
@@ -72,12 +75,11 @@ class Dispatcher {
     return ob_get_clean();
   }
 
-
-  public static function run($moduleName, $command) {
+  public static function run($moduleName, $command, $cmd) {
     try {
       $module = \Defiant\Console\Dispatcher::getModule($moduleName);
       $module->configure(\Defiant\Runner::getConfig());
-      $module->$command();
+      $module->$command($cmd);
     } catch(\Defiant\Database\Error $exception) {
       echo static::renderDatabaseError($exception);
       exit(10);

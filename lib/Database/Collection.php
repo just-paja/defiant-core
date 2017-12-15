@@ -3,6 +3,8 @@
 namespace Defiant\Database;
 
 class Collection extends \Defiant\Resource\Collection {
+  protected $onChange = null;
+
   public function __get($databaseName = null) {
     if (!$databaseName) {
       $database = $this->getDefault();
@@ -15,7 +17,7 @@ class Collection extends \Defiant\Resource\Collection {
 
   public function replace($resources) {
     foreach ($resources as $name=>$config) {
-      $db = \Defiant\Database::fromConfig($config);
+      $db = \Defiant\Database::fromConfig($config, $this->onChange);
       $db->connect();
       $this->resources[$name] = $db;
     }
@@ -26,5 +28,9 @@ class Collection extends \Defiant\Resource\Collection {
       return reset($this->resources);
     }
     return null;
+  }
+
+  public function setOnChange(callable $onChange = null) {
+    $this->onChange = $onChange;
   }
 }

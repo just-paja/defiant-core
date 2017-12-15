@@ -8,23 +8,23 @@ abstract class Database {
   protected $connection;
   protected $onChange;
 
-  public static function fromConfig($config) {
+  public static function fromConfig($config, callable $onChange = null) {
     $connection = new Database\Connection(
       isset($config['dsn']) ? $config['dsn'] : null,
       isset($config['user']) ? $config['user'] : null,
       isset($config['password']) ? $config['password'] : null
     );
-    return Database::fromConnection($connection, 'dbname', 'onChange');
+    return Database::fromConnection($connection, 'dbname', $onChange);
   }
 
-  public static function fromConnection(Database\Connection $connection, $name, $onChange) {
+  public static function fromConnection(Database\Connection $connection, $name, callable $onChange = null) {
     $dbms = $connection->getDbms();
     if ($dbms === 'sqlite') {
-      return new SqliteDatabase($connection, $name, $onChange);
+      return new Database\Sqlite($connection, $name, $onChange);
     }
   }
 
-  public function __construct(Database\Connection $connection, $name, $onChange = null) {
+  public function __construct(Database\Connection $connection, $name, callable $onChange = null) {
     $this->connection = $connection;
     $this->name = $name;
     $this->onChange = $onChange;
@@ -54,7 +54,7 @@ abstract class Database {
     $models = Model::getAllModels();
     $tables = [];
     foreach ($models as $model) {
-      $tables[] = $this->createTable($model::getTableName());
+      $tables[] = $this->createTable($model);
     }
     return $tables;
   }

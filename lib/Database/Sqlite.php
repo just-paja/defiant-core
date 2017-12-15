@@ -4,7 +4,7 @@ namespace Defiant\Database;
 
 class Sqlite extends \Defiant\Database {
   public function createTable($model) {
-    return new SqliteDatabaseTable(
+    return new SqliteTable(
       $this->connection,
       $this,
       $model,

@@ -16,6 +16,9 @@ $cmd->argument()
     return in_array($module, $commands);
   });
 
-list($moduleName, $command) = explode(':', $cmd[0]);
-
-\Defiant\Console\Dispatcher::run($moduleName, $command);
+if ($cmd[0]) {
+  list($moduleName, $command) = explode(':', $cmd[0]);
+  \Defiant\Console\Dispatcher::run($moduleName, $command);
+} else {
+  $cmd->printHelp();
+}

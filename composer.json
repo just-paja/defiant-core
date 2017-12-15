@@ -14,10 +14,20 @@
       "Defiant\\": "lib"
     }
   },
-  "bin": ["src/bin/defiant"],
   "archive": {
     "exclude": ["__tests__"]
   },
+  "bin": ["bin/defiant"],
+  "minimum-stability": "dev",
+  "platform": {
+    "php": "^7"
+  },
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/just-paja/defiant-core"
+    }
+  ],
   "require-dev": {
     "phpunit/phpunit": "^6.5"
   },

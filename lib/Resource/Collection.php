@@ -12,9 +12,18 @@ class Collection {
     }
   }
 
-  public function __get($resource) {
-    if (isset($this->resources[$resource])) {
-      return $this->resources[$resource];
+  public function __get($resourceName) {
+    if (isset($this->resources[$resourceName])) {
+      return $this->resources[$resourceName];
+    }
+
+    foreach ($this->resources as $key => $resource) {
+      $keyArr = explode('\\', $key);
+      $lowerKey = strtolower($keyArr[sizeof($keyArr) - 1]);
+      $lowerResourceName = strtolower($resourceName);
+      if ($lowerKey === $lowerResourceName) {
+        return $resource;
+      }
     }
 
     if ($resource) {

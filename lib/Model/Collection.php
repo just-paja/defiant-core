@@ -17,7 +17,7 @@ class Collection extends \Defiant\Resource\Collection {
     try {
       return parent::__get($model);
     } catch(\Defiant\Resource\Error $exception) {
-      var_dump(array_keys($this->resources));
+
       throw new Error(sprintf('Model %s does not exist', $model));
     }
   }

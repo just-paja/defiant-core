@@ -1,0 +1,27 @@
+{
+  "name": "defiant/core",
+  "description": "Tiny PHP framework not meant for production use",
+  "licesnse": "MIT",
+  "authors": [
+    {
+      "name": "Pavel Žák",
+      "email": "pavel@zak.global"
+    }
+  ],
+  "autoload": {
+    "exclude-from-classmap": ["/__tests__/"],
+    "psr-4": {
+      "Defiant\\": "lib"
+    }
+  },
+  "bin": ["src/bin/defiant"],
+  "archive": {
+    "exclude": ["__tests__"]
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^6.5"
+  },
+  "require": {
+    "nategood/commando": "^0.2.9"
+  }
+}

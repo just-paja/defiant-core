@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<phpunit bootstrap="./vendor/autoload.php" colors="true">
+  <testsuites>
+    <testsuite name="Defiant">
+      <directory suffix=".php">src/lib/__tests__</directory>
+      <directory suffix=".php">src/lib/Database/__tests__</directory>
+      <directory suffix=".php">src/lib/Http/__tests__</directory>
+      <directory suffix=".php">src/lib/Model/__tests__</directory>
+      <directory suffix=".php">src/lib/Resource/__tests__</directory>
+    </testsuite>
+  </testsuites>
+</phpunit>

@@ -1,0 +1,21 @@
+#!/usr/bin/env php
+<?php
+
+require 'vendor/autoload.php';
+
+$commands = \Defiant\Console\Dispatcher::getCommands();
+$cmd = new Commando\Command();
+
+$cmd->argument()
+  ->referToAs('command')
+  ->description(implode("\n", array_merge([
+    'Command to be executed. Can be one of:',
+    '',
+  ], $commands)))
+  ->must(function($module) use ($commands) {
+    return in_array($module, $commands);
+  });
+
+list($moduleName, $command) = explode(':', $cmd[0]);
+
+\Defiant\Console\Dispatcher::run($moduleName, $command);

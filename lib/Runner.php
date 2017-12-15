@@ -33,12 +33,12 @@ class Runner {
       $this->router->replace($config['routes']);
     }
 
-    if (isset($config['database'])) {
-      $this->databases->replace($config['database']);
-    }
-
     if (isset($config['onDatabaseChange'])) {
       $this->databases->setOnChange($config['onDatabaseChange']);
+    }
+
+    if (isset($config['database'])) {
+      $this->databases->replace($config['database']);
     }
 
     if (isset($config['models'])) {

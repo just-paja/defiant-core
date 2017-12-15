@@ -172,7 +172,8 @@ abstract class Table {
 
   public function triggerChange($changeType, $name, $params = null) {
     if ($this->onChange) {
-      call_user_func($this->onChange, $changeType, $name, $params);
+      $lambda = $this->onChange;
+      $lambda($changeType, $name, $params);
     }
   }
 }

@@ -47,12 +47,18 @@ class View {
     return true;
   }
 
-  public function renderTemplate($template, array $context = [], $absolutePath = false) {
-    ob_start();
-    $request = $this->request;
-    extract($context);
-    require($absolutePath ? $template : 'templates/'.$template);
-    $content = ob_get_clean();
-    return $content;
+  public function renderTemplate($template, array $context = []) {
+    $nameSplit = explode('.', $template);
+    $suffix = $nameSplit[sizeof($nameSplit) - 1];
+
+    if ($renderer = $this->runner->getRenderer($suffix)) {
+      if (!($renderer instanceof \Defiant\View\Renderer)) {
+        throw new Error(sprintf('Renderer %s does not inherit from Defiant\\View\\Renderer', get_class($renderer)));
+      }
+      $context['request'] = $this->request;
+      return $renderer->renderFile($template, $context);
+    }
+
+    throw new Error(sprintf('Renderer for suffix %s is not configured!', $suffix));
   }
 }

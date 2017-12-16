@@ -7,6 +7,11 @@ class Runner {
   protected $databases;
   protected $models;
   protected $router;
+  protected $renderers = [
+    'html' => '\Defiant\View\PlainRenderer',
+    'pug' => '\Defiant\View\PugRenderer',
+    'jade' => '\Defiant\View\PugRenderer',
+  ];
   protected $statusMessages = [
     200 => 'OK',
     404 => 'Not Found',
@@ -59,6 +64,10 @@ class Runner {
 
     if (isset($config['viewFatalError'])) {
       $this->viewFatalError = $config['viewFatalError'];
+    }
+
+    if (isset($config['renderers'])) {
+      $this->renderers = array_merge($this->renderers, $config['renderers']);
     }
   }
 
@@ -142,5 +151,13 @@ class Runner {
       header($header.': '.$value);
     }
     echo $content;
+  }
+
+  public function getRenderer($templateSuffix) {
+    if ($this->renderers[$templateSuffix]) {
+      return new $this->renderers[$templateSuffix]();
+    }
+
+    return null;
   }
 }

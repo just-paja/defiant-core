@@ -120,10 +120,9 @@ class Query {
     }
 
     $queryParams = [];
+    $filterStatement = [];
 
     if ($this->filter) {
-      $filterStatement = [];
-
       foreach ($this->filter as $field => $value) {
         $filterStatement[] = "`$baseTableName`.`$field` = :$field";
         $queryParams[$field] = $value;

@@ -53,29 +53,61 @@ class Runner {
     return $this->$attr;
   }
 
+  public function getRouter() {
+    return $this->router;
+  }
+
   public function resolveRequest(Http\Request $request) {
     $viewCallback = $this->router->getView($request);
 
     if ($viewCallback) {
-      return $this->resolveCallback($viewCallback[0], $viewCallback[1], $request);
-    } else {
-      throw new Http\NotFound();
+      $view = $this->resolveCallbackView($viewCallback, $request);
+      if ($view->isAccessible()) {
+        $viewMethod = $this->resolveCallbackViewMethod($viewCallback);
+        $pageContent = $this->resolveView($view, $viewMethod);
+        return $this->serveView($view, $pageContent);
+      }
     }
+
+    throw new Http\NotFound();
   }
 
-  public function resolveCallback($viewClass, $viewMethod, Http\Request $request, array $context = []) {
-    $view = new $viewClass($this);
-    $callback = [$view, $viewMethod];
-    return call_user_func($callback, $request, $context);
+  public function resolveCallbackView($viewCallback, $request) {
+    $className = $viewCallback;
+    if (is_array($viewCallback)) {
+      $className = $viewCallback[0];
+    }
+    return new $className($this, $request);
   }
 
-  public function serve($status, $content) {
+  public function resolveCallbackViewMethod($viewCallback) {
+    $methodName = 'view';
+    if (is_array($viewCallback) && $viewCallback[1]) {
+      $methodName = $viewCallback[1];
+    }
+    return $methodName;
+  }
+
+  public function resolveView(View $view, $viewMethod, array $context = []) {
+    return $view->$viewMethod($context);
+  }
+
+  public function resolveCallback($viewCallback, Http\Request $request, array $context = []) {
+    $view = $this->resolveCallbackView($viewCallback, $request);
+    $viewMethod = $this->resolveCallbackViewMethod($viewCallback);
+    $pageContent = $this->resolveView($view, $viewMethod, $context);
+    return $this->serveView($view, $pageContent);
+  }
+
+  public function serveView(View $view, $content) {
+    $status = $view->getStatus();
+    $headers = $view->getHeaders();
     ob_end_clean();
     header('HTTP/1.1 '.$status.' '.$this->statusMessages[$status]);
-    echo $content;
-  }
 
-  public function serveCallback($viewClass, $viewMethod, Http\Request $request, $status, array $context = []) {
-    return $this->serve($status, $this->resolveCallback($viewClass, $viewMethod, $request, $context));
+    foreach ($headers as $header => $value) {
+      header($header.': '.$value);
+    }
+    echo $content;
   }
 }

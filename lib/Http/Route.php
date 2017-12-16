@@ -9,7 +9,7 @@ class Route {
 
   public function __construct($method, $path, $viewCallback) {
     $this->method = $method;
-    $this->path = $path;
+    $this->path = rtrim($path, '/');
     $this->viewCallback = $viewCallback;
   }
 }

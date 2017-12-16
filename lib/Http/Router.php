@@ -12,17 +12,21 @@ class Router {
     }
   }
 
-  public function getRoute(Request $request) {
+  public function getRouteFromPath($path, $method = null) {
     foreach ($this->routes as $route) {
-      if ($route->method != $request->method) {
+      if ($method && $route->method !== $method) {
         continue;
       }
-      if ($route->path != $request->path) {
+      if ($route->path !== $path) {
         continue;
       }
       return $route;
     }
     return null;
+  }
+
+  public function getRoute(Request $request) {
+    return $this->getRouteFromPath($request->path, $request->method);
   }
 
   public function getView(Request $request) {

@@ -86,6 +86,14 @@ class SqliteTable extends \Defiant\Database\Table {
     ];
   }
 
+  public static function getExistingColumns($columns) {
+    $existing = [];
+    foreach ($columns as $column) {
+      $existing[] = $column;
+    }
+    return $existing;
+  }
+
   protected function getChangeQuery() {
     $tempName = $this->name.'_MOD';
     $specs = $this->getColumnSpecs();
@@ -100,7 +108,7 @@ class SqliteTable extends \Defiant\Database\Table {
       static::getDropQuery($tempName, true),
       static::getRenameQuery($this->name, $tempName),
       static::getCreateQuery($this->name, $specs),
-      static::getCopyDataQuery($tempName, $this->name, $copyCols),
+      static::getCopyDataQuery($tempName, $this->name, static::getExistingColumns($copyCols)),
       static::getDropQuery($tempName),
       static::getToggleForeignKeysQuery(true),
     ];

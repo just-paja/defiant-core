@@ -4,13 +4,15 @@ namespace Defiant\Model;
 
 class Query {
   protected $database;
-  protected $model;
   protected $filter;
-  protected $offset;
+  protected $jumps;
   protected $limit;
+  protected $model;
+  protected $offset;
 
   public function __construct(\Defiant\Database $database, $model) {
     $this->filter = [];
+    $this->jumps = [];
     $this->database = $database;
     $this->setModel($model);
   }
@@ -20,7 +22,7 @@ class Query {
   }
 
   public function all() {
-    return $this->map($this->select()->fetchAll());
+    return $this->map($this->select()->fetchAll(\PDO::FETCH_ASSOC));
   }
 
   public function filter(array $conds) {
@@ -49,7 +51,12 @@ class Query {
   }
 
   protected function extend(array $data) {
-    $item = new $this->model($data, $this->database);
+    $lastJump = $this->getLastJump();
+    if ($lastJump) {
+      $item = new $lastJump['model']($data, $this->database);
+    } else {
+      $item = new $this->model($data, $this->database);
+    }
     $item->setComesFromDb();
     return $item;
   }
@@ -62,21 +69,63 @@ class Query {
     return $items;
   }
 
+  protected function getLastJump() {
+    $lastJumpIndex = sizeof($this->jumps) - 1;
+    return $lastJumpIndex === -1 ? null : $this->jumps[$lastJumpIndex];
+  }
+
+  protected function mapColumnWithTableName($table, $columns) {
+    $mapped = [];
+    foreach ($columns as $column) {
+      $mapped[] = '`'.$table.'`.'.'`'.$column.'`';
+    }
+    return $mapped;
+  }
+
+  protected function getJumpJoinCond($jump) {
+    $srcTable = $this->model::getTableName();
+    $cond = [];
+    $cond[] = '`'.$srcTable.'`.`'.$jump['fk'].'`';
+    $cond[] = '=';
+    $cond[] = '`'.$jump['model']::getTableName().'`.`id`';
+    return implode(' ', $cond);
+  }
+
   protected function select() {
-    $columns = $this->model::getFieldNames();
+    $baseTableName = $this->model::getTableName();
+    $jump = sizeof($this->jumps) > 0;
+    if ($jump) {
+      $lastJump = $this->getLastJump();
+      $columns = $this->mapColumnWithTableName(
+        $lastJump['model']::getTableName(),
+        $lastJump['model']::getFieldNames()
+      );
+    } else {
+      $columns = $this->mapColumnWithTableName(
+        $baseTableName,
+        $this->model::getFieldNames()
+      );
+    }
     $query = [
       'SELECT',
       implode(', ', $columns),
       'FROM',
-      $this->model::getTableName(),
+      $baseTableName,
     ];
+
+    foreach ($this->jumps as $jump) {
+      $query[] = 'JOIN';
+      $query[] = $jump['model']::getTableName();
+      $query[] = 'ON('.$this->getJumpJoinCond($jump).')';
+    }
+
     $queryParams = [];
 
     if ($this->filter) {
       $filterStatement = [];
 
       foreach ($this->filter as $field => $value) {
-        $filterStatement[] = "`$field` = :$field";
+        $filterStatement[] = "`$baseTableName`.`$field` = :$field";
         $queryParams[$field] = $value;
       }
     }
@@ -87,5 +136,13 @@ class Query {
     }
 
     return $this->database->query(implode(' ', $query), $queryParams);
+  }
+
+  public function jumpToModelViaForeignKey($model, $fk) {
+    $this->jumps[] = [
+      "model" => $model,
+      "fk" => $fk,
+    ];
+    return $this;
   }
 }

@@ -52,25 +52,30 @@ abstract class Model {
   }
 
   public static function getFields() {
+    return static::getFieldsFromDefinition(static::$fields, false);
+  }
+
+  public static function getExpandedFields() {
     $fields = array_merge([
       new Model\IntegerField('id', [
         "isPrimary" => true,
         "isAutoincrement" => true,
       ]),
-    ], static::getFieldsFromDefinition(static::$fields));
+    ], static::getFieldsFromDefinition(static::$fields, true));
 
     $fields[] = new Model\DatetimeField('createdAt', [
       "setNowOnInsert" => true,
+      "isNull" => true,
     ]);
     $fields[] = new Model\DatetimeField('updatedAt', [
       "setNowOnUpdate" => true,
+      "isNull" => true,
     ]);
     return $fields;
   }
 
-  public static function getField($fieldName) {
-    $fields = static::getFields();
-    foreach ($fields as $field) {
+  public static function getFieldFromCollection($collection, $fieldName) {
+    foreach ($collection as $field) {
       if ($field->getName() == $fieldName) {
         return $field;
       }
@@ -78,8 +83,16 @@ abstract class Model {
     return null;
   }
 
+  public static function getField($fieldName) {
+    $field = static::getFieldFromCollection(static::getFields(), $fieldName);
+    if (!$field) {
+      $field = static::getFieldFromCollection(static::getExpandedFields(), $fieldName);
+    }
+    return $field;
+  }
+
   public static function getFieldNames() {
-    $fields = static::getFields();
+    $fields = static::getExpandedFields();
     $names = [];
     foreach ($fields as $field) {
       if ($field::dbType) {
@@ -89,13 +102,13 @@ abstract class Model {
     return $names;
   }
 
-  public static function getFieldsFromDefinition($fieldDef) {
+  public static function getFieldsFromDefinition($fieldDef, $expand = false) {
     $fields = [];
 
     foreach ($fieldDef as $fieldName => $fieldType) {
       $field = static::getFieldFromType($fieldName, $fieldType);
-      if (is_subclass_of($field, '\Defiant\Model\FieldSet')) {
-        $fields = array_merge($fields, self::getFieldsFromDefinition($field->expandFields()));
+      if ($expand && is_subclass_of($field, '\Defiant\Model\FieldSet')) {
+        $fields = array_merge($fields, static::getFieldsFromDefinition($field->expandFields()));
       } else {
         $fields[] = $field;
       }
@@ -115,7 +128,7 @@ abstract class Model {
   }
 
   public static function hasField($fieldName) {
-    $fields = static::getFields();
+    $fields = static::getExpandedFields();
     foreach ($fields as $field) {
       if ($field->getName() === $fieldName) {
         return true;
@@ -132,7 +145,7 @@ abstract class Model {
     $field = static::getField($fieldName);
 
     if (!$field) {
-      throw new Error(sprintf('Field "%s" does not exist on model "%s"', $fieldName, get_class()));
+      throw new Error(sprintf('Field "%s" does not exist on model "%s"', $fieldName, get_called_class()));
     }
 
     return $field->getValue($this, isset($this->$fieldName) ?
@@ -198,7 +211,7 @@ abstract class Model {
 
   public function toDbObject($opportunity = null) {
     $array = [];
-    $fields = $this::getFields();
+    $fields = $this::getExpandedFields();
     foreach ($fields as $field) {
       if (!$field::dbType) {
         continue;

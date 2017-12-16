@@ -11,7 +11,7 @@ class Connector {
     $connector = $model::getConnector();
 
     if (!$connector) {
-      $connector = new self($model, $database);
+      $connector = new static($model, $database);
       $model::setConnector($connector);
     }
 
@@ -21,7 +21,7 @@ class Connector {
   public function __construct($model, \Defiant\Database $database = null) {
     $this->database = $database;
     $this->model = $model;
-    $this->fields = $model::getFields();
+    $this->fields = $model::getExpandedFields();
   }
 
   public function __get($attr) {

@@ -27,7 +27,7 @@ class Collection {
     }
 
     if ($resource) {
-      throw new Error(sprintf('Resource %s does not exist in %s', $resource, get_class($this)));
+      throw new Error(sprintf('Resource %s does not exist in %s', $resourceName, get_class($this)));
     }
     throw new Error(sprintf('Could not determine default resource in %s', get_class($this)));
 

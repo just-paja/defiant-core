@@ -3,14 +3,15 @@
 namespace Defiant;
 
 class View {
+  protected $headers = [];
   protected $host;
   protected $models;
+  protected $params = [];
   protected $path;
   protected $protocol;
   protected $request;
   protected $runner;
   protected $status = 200;
-  protected $headers = [];
 
   public function __construct(Runner $runner = null, Http\Request $request = null) {
     if ($runner) {
@@ -18,10 +19,11 @@ class View {
       $this->models = $runner->models;
     }
     if ($request) {
-      $this->request = $request;
       $this->host = $request->host;
-      $this->protocol = $request->protocol;
+      $this->params = $request->getParams();
       $this->path = $request->path;
+      $this->protocol = $request->protocol;
+      $this->request = $request;
     }
   }
 
@@ -33,6 +35,10 @@ class View {
     return $this->headers;
   }
 
+  public function getParam($name) {
+    return isset($this->params[$name]) ? $this->params[$name] : null;
+  }
+
   public function getStatus() {
     return $this->status;
   }
@@ -41,11 +47,11 @@ class View {
     return true;
   }
 
-  public function renderTemplate($template, array $context = []) {
+  public function renderTemplate($template, array $context = [], $absolutePath = false) {
     ob_start();
     $request = $this->request;
     extract($context);
-    require('templates/'.$template);
+    require($absolutePath ? $template : 'templates/'.$template);
     $content = ob_get_clean();
     return $content;
   }

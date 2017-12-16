@@ -20,4 +20,13 @@ class OneToManyField extends FieldSet {
     return $this->model::getConnector()->objects
       ->filter([ $fkTableKey => $instance->id ]);
   }
+
+  public function serialize($value, $opportunity = null) {
+    $collection = [];
+    $data = $value->all();
+    foreach ($data as $item) {
+      $collection[] = $item->toDataObject(true);
+    }
+    return $collection;
+  }
 }

@@ -14,13 +14,9 @@ class Router {
 
   public function getRouteFromPath($path, $method = null) {
     foreach ($this->routes as $route) {
-      if ($method && $route->method !== $method) {
-        continue;
+      if ($route->matches($path, $method)) {
+        return $route;
       }
-      if ($route->path !== $path) {
-        continue;
-      }
-      return $route;
     }
     return null;
   }

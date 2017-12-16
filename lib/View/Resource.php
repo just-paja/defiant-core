@@ -3,23 +3,12 @@
 namespace Defiant\View;
 
 abstract class Resource extends \Defiant\View\Api {
-  protected $links = [];
-
   public function __construct(\Defiant\Runner $runner = null, \Defiant\Http\Request $request = null) {
     parent::__construct($runner, $request);
     $this->addLink('self', $this->path);
   }
 
-  protected function addLink($name, $relativePath) {
-    $this->links[$name] = $this->protocol.'://'.$this->host.$relativePath;
-  }
-
   abstract public function getResource();
-
-  public function render($context) {
-    $context['links'] = $this->links;
-    return parent::render($context);
-  }
 
   public function view() {
     $resource = $this->getResource();
@@ -31,6 +20,28 @@ abstract class Resource extends \Defiant\View\Api {
     if (!$data) {
       throw new \Defiant\Http\NotFound();
     }
-    return $this->render($data);
+    return $this->render($this->serializeObject($data));
+  }
+
+  public function isAccessible() {
+    return false;
+  }
+
+  protected function serializeObject(\Defiant\Model $object) {
+    $array = [];
+    $fields = $object->getFields();
+    foreach ($fields as $field) {
+      $fieldName = $field->getName();
+      if (is_a($field, '\Defiant\Model\ForeignKeyField')) {
+        $array[$fieldName] = $this->serializeObject(
+          $field->serialize($object->$fieldName)
+        );
+      } else if (is_a($field, '\Defiant\Model\FieldSet')) {
+        $this->linkResource($fieldName);
+      } else {
+        $array[$fieldName] = $field->serialize($object->$fieldName);
+      }
+    }
+    return $array;
   }
 }

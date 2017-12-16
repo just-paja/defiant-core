@@ -3,6 +3,7 @@
 namespace Defiant\Model;
 
 class Query {
+  protected $mode = 'select';
   protected $database;
   protected $filter;
   protected $jumps;
@@ -23,6 +24,12 @@ class Query {
 
   public function all() {
     return $this->map($this->select()->fetchAll(\PDO::FETCH_ASSOC));
+  }
+
+  public function count() {
+    $this->mode = 'count';
+    $data = $this->select()->fetch(\PDO::FETCH_ASSOC);
+    return $data['count'];
   }
 
   public function filter(array $conds) {
@@ -106,12 +113,17 @@ class Query {
         $this->model::getFieldNames()
       );
     }
-    $query = [
-      'SELECT',
-      implode(', ', $columns),
-      'FROM',
-      $baseTableName,
-    ];
+
+    $query = ['SELECT'];
+
+    if ($this->mode === 'count') {
+      $query[] = 'COUNT(*) as count';
+    } else {
+      $query[] = implode(', ', $columns);
+    }
+
+    $query[] = 'FROM';
+    $query[] = $baseTableName;
 
     foreach ($this->jumps as $jump) {
       $query[] = 'JOIN';
@@ -132,6 +144,11 @@ class Query {
     if (sizeof($filterStatement) > 0) {
       $query[] = 'WHERE';
       $query[] = implode(' AND ', $filterStatement);
+    }
+
+    if ($this->offset || $this->limit) {
+      $query[] = 'LIMIT';
+      $query[] = "$this->offset, $this->limit";
     }
 
     return $this->database->query(implode(' ', $query), $queryParams);

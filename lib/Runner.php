@@ -2,6 +2,7 @@
 
 namespace Defiant;
 
+
 class Runner {
   protected $databases;
   protected $models;
@@ -11,6 +12,9 @@ class Runner {
     404 => 'Not Found',
     500 => 'Internal Server Error',
   ];
+  protected $viewBadRequest = ['\Defiant\View\ServerError', 'badRequest'];
+  protected $viewFatalError = ['\Defiant\View\ServerError', 'fatalError'];
+  protected $viewNotFound = ['\Defiant\View\ServerError', 'notFound'];
 
   public static function getConfig() {
     if (file_exists('defiantConfig.php')) {
@@ -44,6 +48,18 @@ class Runner {
     if (isset($config['models'])) {
       $this->models->replace($config['models']);
     }
+
+    if (isset($config['viewNotFound'])) {
+      $this->viewNotFound = $config['viewNotFound'];
+    }
+
+    if (isset($config['badRequest'])) {
+      $this->badRequest = $config['badRequest'];
+    }
+
+    if (isset($config['viewFatalError'])) {
+      $this->viewFatalError = $config['viewFatalError'];
+    }
   }
 
   public function __get($attr) {
@@ -58,12 +74,29 @@ class Runner {
   }
 
   public function resolveRequest(Http\Request $request) {
-    $viewCallback = $this->router->getView($request);
+    try {
+      $this->serveResponseForRequest($request);
+    } catch (\Defiant\Http\NotFound $exception) {
+      $this->resolveCallback($this->viewNotFound, $request);
+    } catch (\Defiant\Http\BadRequest $exception) {
+      $this->resolveCallback($this->viewBadRequest, $request, [
+        "exception" => $exception,
+      ]);
+    } catch (\Exception $exception) {
+      $this->resolveCallback($this->viewFatalError, $request, [
+        "exception" => $exception,
+      ]);
+    }
+  }
 
-    if ($viewCallback) {
-      $view = $this->resolveCallbackView($viewCallback, $request);
+  public function serveResponseForRequest(Http\Request $request) {
+    $route = $this->router->getRoute($request);
+
+    if ($route) {
+      $request->setParams($route->getParams());
+      $view = $this->resolveCallbackView($route->viewCallback, $request);
       if ($view->isAccessible()) {
-        $viewMethod = $this->resolveCallbackViewMethod($viewCallback);
+        $viewMethod = $this->resolveCallbackViewMethod($route->viewCallback);
         $pageContent = $this->resolveView($view, $viewMethod);
         return $this->serveView($view, $pageContent);
       }

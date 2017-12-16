@@ -52,7 +52,21 @@ abstract class Model {
   }
 
   public static function getFields() {
-    return static::getFieldsFromDefinition(static::$fields, false);
+    return array_merge([
+      new Model\IntegerField('id', [
+        "isPrimary" => true,
+        "isAutoincrement" => true,
+      ]),
+    ], static::getFieldsFromDefinition(static::$fields, false), [
+      new Model\DatetimeField('createdAt', [
+        "setNowOnInsert" => true,
+        "isNull" => true,
+      ]),
+      new Model\DatetimeField('updatedAt', [
+        "setNowOnUpdate" => true,
+        "isNull" => true,
+      ]),
+    ]);
   }
 
   public static function getExpandedFields() {
@@ -145,7 +159,7 @@ abstract class Model {
     $field = static::getField($fieldName);
 
     if (!$field) {
-      throw new Error(sprintf('Field "%s" does not exist on model "%s"', $fieldName, get_called_class()));
+      throw new Model\Error(sprintf('Field "%s" does not exist on model "%s"', $fieldName, get_called_class()));
     }
 
     return $field->getValue($this, isset($this->$fieldName) ?
@@ -178,7 +192,7 @@ abstract class Model {
         $this->changed = true;
       }
     } else {
-      throw new Error(sprintf('Model "%s" does not have field "%s"', get_called_class(), $field));
+      throw new Model\Error(sprintf('Model "%s" does not have field "%s"', get_called_class(), $field));
     }
     return $this;
   }

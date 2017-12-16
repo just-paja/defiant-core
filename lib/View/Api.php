@@ -3,17 +3,28 @@
 namespace Defiant\View;
 
 class Api extends \Defiant\View {
+  protected $links = [];
+
   public function __construct(\Defiant\Runner $runner = null, \Defiant\Http\Request $request = null) {
     parent::__construct($runner, $request);
     $this->addHeader('Content-Type', 'application/json; charset=utf-8');
   }
 
-  public function render(array $context) {
+  protected function addLink($name, $relativePath) {
+    $this->links[$name] = $this->protocol.'://'.$this->host.$relativePath;
+  }
+
+  public function render(array $context = []) {
+    $this->linkResources();
+    $context['links'] = $this->links;
     return json_encode($context);
   }
 
   public function view() {
     return $this->render([]);
+  }
+
+  function linkResources() {
   }
 
   public function linkResource($resource) {
@@ -23,12 +34,6 @@ class Api extends \Defiant\View {
       if ($view->isAccessible()) {
         $this->addLink($resource, $route->path);
       }
-    } else {
-      throw new Error(sprintf('Resource %s does not exist on %s', $resource, $this->path));
     }
-  }
-
-  public function isAccessible() {
-    return false;
   }
 }

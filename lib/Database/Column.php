@@ -33,6 +33,7 @@ class Column {
     $this->previous = $previous;
     $this->field = $field;
     $this->name  = $field->getName();
+    $this->default = $field->getDefault();
     $this->table = $table;
     $this->onChange = $onChange;
 
@@ -59,25 +60,28 @@ class Column {
   public function getChanges(Column $column = null) {
     $changes = [];
     if (!$column || $this->getLength() !== $column->getLength()) {
-      $changes['length'] = new Change($column ? $column->getLength() : null, $this->getLength());
+      $changes['length'] = new \Defiant\Resource\Change($column ? $column->getLength() : null, $this->getLength());
     }
     if (!$column || $this->getName() !== $column->getName()) {
-      $changes['name'] = new Change($column ? $column->getName() : null, $this->getName());
+      $changes['name'] = new \Defiant\Resource\Change($column ? $column->getName() : null, $this->getName());
     }
     if (!$column || $this->getType() !== $column->getType()) {
-      $changes['type'] = new Change($column ? $column->getType() : null, $this->getType());
+      $changes['type'] = new \Defiant\Resource\Change($column ? $column->getType() : null, $this->getType());
     }
     if (!$column || $this->isAutoincrement() !== $column->isAutoincrement()) {
-      $changes['isAutoincrement'] = new Change($column ? $column->isAutoincrement() : null, $this->isAutoincrement());
+      $changes['isAutoincrement'] = new \Defiant\Resource\Change($column ? $column->isAutoincrement() : null, $this->isAutoincrement());
     }
     if (!$column || $this->isNull() !== $column->isNull()) {
-      $changes['isNull'] = new Change($column ? $column->isNull() : null, $this->isNull());
+      $changes['isNull'] = new \Defiant\Resource\Change($column ? $column->isNull() : null, $this->isNull());
     }
     if (!$column || $this->isPrimary() !== $column->isPrimary()) {
-      $changes['isPrimary'] = new Change($column ? $column->isPrimary() : null, $this->isPrimary());
+      $changes['isPrimary'] = new \Defiant\Resource\Change($column ? $column->isPrimary() : null, $this->isPrimary());
     }
     if (!$column || $this->isUnsigned() !== $column->isUnsigned()) {
-      $changes['isUnsigned'] = new Change($column ? $column->isUnsigned() : null, $this->isUnsigned());
+      $changes['isUnsigned'] = new \Defiant\Resource\Change($column ? $column->isUnsigned() : null, $this->isUnsigned());
+    }
+    if (!$column || $this->getDefault() !== $column->getDefault()) {
+      $changes['default'] = new \Defiant\Resource\Change($column ? $column->getDefault() : null, $this->getDefault());
     }
     return $changes;
   }

@@ -24,6 +24,9 @@ class SqliteTable extends \Defiant\Database\Table {
         'INTEGER',
       ])) {
         $def["isUnsigned"] = false;
+        if ($def['default']) {
+          $def['default'] = intval($def['default']);
+        }
       }
 
       $field = \Defiant\Model\Field::createFromDef($column['name'], $def);

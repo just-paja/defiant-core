@@ -12,6 +12,8 @@ class Module {
       return 'false';
     } elseif ($value === true) {
       return 'true';
+    } elseif (is_int($value)) {
+      return $value;
     }
     return "'$value'";
   }

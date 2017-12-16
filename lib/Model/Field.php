@@ -5,6 +5,7 @@ namespace Defiant\Model;
 class Field {
   const dbType = null;
   const isUnsigned = null;
+  protected $default = null;
   protected $isAutoincrement = false;
   protected $isNull = false;
   protected $isPrimary = false;
@@ -72,6 +73,10 @@ class Field {
 
   public function serialize($value, $opportunity = null) {
     return $value;
+  }
+
+  public function getDefault() {
+    return $this->default;
   }
 
   public function getName() {

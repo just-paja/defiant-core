@@ -4,19 +4,30 @@ namespace Defiant\Console;
 
 class Dispatcher {
   public static function getCommands() {
-    return [
-      'db:seed',
-      'db:sync',
-      'model:list',
-    ];
+    \Defiant\Runner::getConfig();
+    $modules = Module::getAllConsoleModules();
+    $commands = [];
+
+    foreach ($modules as $module) {
+      $class = new \ReflectionClass($module);
+      $methods = $class->getMethods(\ReflectionMethod::IS_PUBLIC);
+      foreach ($methods as $method) {
+        if ($method->name !== 'configure' && $method->class === $module) {
+          $commands[] = $module::callsign.':'.$method->name;
+        }
+      }
+    }
+    return $commands;
   }
 
-  public static function getModule($module) {
-    if ($module === 'db') {
-      return new Database();
-    }
-    if ($module === 'model') {
-      return new Model();
+  public static function getModule($callsign) {
+    $modules = Module::getAllConsoleModules();
+    $commands = [];
+
+    foreach ($modules as $moduleClass) {
+      if ($moduleClass::callsign === $callsign) {
+        return new $moduleClass();
+      }
     }
 
     return null;
@@ -89,3 +100,6 @@ class Dispatcher {
     }
   }
 }
+
+require_once 'Database.php';
+require_once 'Model.php';

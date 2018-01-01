@@ -3,7 +3,9 @@
 namespace Defiant\Console;
 
 class Database extends Module {
-  public function onChange($changeType, $changeIdentifier, $changes = null) {
+  const callsign = 'db';
+
+  protected function onChange($changeType, $changeIdentifier, $changes = null) {
     echo $changeType." ".$changeIdentifier."\n";
 
     if ($changes) {

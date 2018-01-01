@@ -21,4 +21,17 @@ class Module {
   public function configure(array $config) {
     $this->runner = new \Defiant\Runner($config);
   }
+
+  public static function getAllConsoleModules() {
+    $classes = get_declared_classes();
+    $modules = [];
+
+    foreach ($classes as $class) {
+      if (is_subclass_of($class, get_class())) {
+        $modules[] = $class;
+      }
+    }
+
+    return $modules;
+  }
 }

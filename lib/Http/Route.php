@@ -6,14 +6,16 @@ class Route {
   public $method;
   public $path;
   public $viewCallback;
+  public $name;
   protected $params = [];
   protected $pathPattern;
   protected $paramNames = [];
 
-  public function __construct($method, $path, $viewCallback) {
+  public function __construct($method, $path, $viewCallback, $name = null) {
     $this->method = $method;
     $this->path = $path === '/' ? '/' : rtrim($path, '/');
     $this->viewCallback = $viewCallback;
+    $this->name = $name;
   }
 
   public function matches($path, $method = null) {
@@ -48,5 +50,16 @@ class Route {
       $this->pathPattern = '/^'.$pattern.'$/';
     }
     return $this->pathPattern;
+  }
+
+  public function getTranslatedPath(array $params = []) {
+    $path = $this->path;
+    $this->getPathPattern();
+    foreach ($this->paramNames as $paramName) {
+      if (!empty($params[$paramName])) {
+        $path = preg_replace($params[$paramName], ':'.$paramName, $path);
+      }
+    }
+    return $path;
   }
 }

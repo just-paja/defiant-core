@@ -3,10 +3,11 @@
 namespace Defiant\View;
 
 abstract class Renderer {
-  private $pug;
+  protected $runner;
 
-  public function __construct() {
+  public function __construct(\Defiant\Runner $runner) {
     $this->dirTemplates = realpath('templates');
+    $this->runner = $runner;
   }
 
   public function getTemplatePath($template) {

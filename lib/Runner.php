@@ -155,7 +155,7 @@ class Runner {
 
   public function getRenderer($templateSuffix) {
     if ($this->renderers[$templateSuffix]) {
-      return new $this->renderers[$templateSuffix]();
+      return new $this->renderers[$templateSuffix]($this);
     }
 
     return null;

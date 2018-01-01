@@ -56,9 +56,14 @@ class View {
         throw new Error(sprintf('Renderer %s does not inherit from Defiant\\View\\Renderer', get_class($renderer)));
       }
       $context['request'] = $this->request;
+      $context['router'] = $this->runner->getRouter();
       return $renderer->renderFile($template, $context);
     }
 
     throw new Error(sprintf('Renderer for suffix %s is not configured!', $suffix));
+  }
+
+  public function url($path, array $params = []) {
+    $this->runner->getRouter()->getUrl($path, $params);
   }
 }

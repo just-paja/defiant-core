@@ -14,6 +14,7 @@ class Request {
     $this->host = $server['HTTP_HOST'];
     $this->protocol = $this->isSsl($server) ? 'https' : 'http';
     $pathSplit = explode('?', $server['REQUEST_URI']);
+    $this->body = $_POST;
     $this->path = $pathSplit[0];
     if (isset($pathSplit[1])) {
       $this->parseQueryString($pathSplit[1]);

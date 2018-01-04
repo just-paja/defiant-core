@@ -62,6 +62,13 @@ class View {
     return true;
   }
 
+  public function login($username, $password) {
+    $userConnector = $this->models->getByClassName($this->runner->getUserClass());
+    $user = $userConnector->model::authenticate($username, $password);
+    $userConnector->model::login($this->request, $user);
+    return $user;
+  }
+
   public function renderTemplate($template, array $context = []) {
     $nameSplit = explode('.', $template);
     $suffix = $nameSplit[sizeof($nameSplit) - 1];

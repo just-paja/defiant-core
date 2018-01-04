@@ -47,10 +47,9 @@ class View {
   public function getUser() {
     if (!$this->user) {
       $userId = $this->request->getUserId();
-      $userClass = $this->runner->getUserClass();
       if ($userId) {
-        $this->user = $this->models
-          ->getByClassName($userClass)
+        $this->user = $this->runner
+          ->getUserConnector()
           ->objects
           ->find($userId);
       }
@@ -63,10 +62,14 @@ class View {
   }
 
   public function login($username, $password) {
-    $userConnector = $this->models->getByClassName($this->runner->getUserClass());
+    $userConnector = $this->runner->getUserConnector();
     $user = $userConnector->model::authenticate($username, $password);
     $userConnector->model::login($this->request, $user);
     return $user;
+  }
+
+  public function logoutUser() {
+    $this->runner->getUserConnector()->model::logout($this->request);
   }
 
   public function renderTemplate($template, array $context = []) {
@@ -79,6 +82,7 @@ class View {
       }
       $context['request'] = $this->request;
       $context['router'] = $this->runner->getRouter();
+      $context['user'] = $this->getUser();
       return $renderer->renderFile($template, $context);
     }
 

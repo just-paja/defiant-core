@@ -19,4 +19,8 @@ class RequestSession {
   public function set($key, $value) {
     $this->data[$key] = $value;
   }
+
+  public function unset($key) {
+    unset($this->data[$key]);
+  }
 }

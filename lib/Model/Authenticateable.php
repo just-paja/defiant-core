@@ -29,4 +29,8 @@ abstract class Authenticateable extends \Defiant\Model {
   public static function login(\Defiant\Http\Request $request, self $user) {
     $request->session->set(static::FIELD_SESSION_USER_ID, $user->id);
   }
+
+  public static function logout(\Defiant\Http\Request $request) {
+    $request->session->unset(static::FIELD_SESSION_USER_ID);
+  }
 }

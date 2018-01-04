@@ -170,4 +170,8 @@ class Runner {
   public function getUserClass() {
     return $this->userClass;
   }
+
+  public function getUserConnector() {
+    return $this->models->getByClassName($this->getUserClass());
+  }
 }

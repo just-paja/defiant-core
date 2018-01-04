@@ -57,7 +57,7 @@ class Route {
     $this->getPathPattern();
     foreach ($this->paramNames as $paramName) {
       if (!empty($params[$paramName])) {
-        $path = preg_replace($params[$paramName], ':'.$paramName, $path);
+        $path = preg_replace('/\:'.$paramName.'/', $params[$paramName], $path);
       }
     }
     return $path;

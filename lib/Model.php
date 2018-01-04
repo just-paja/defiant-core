@@ -10,7 +10,6 @@ abstract class Model {
   protected static $databaseName = null;
   protected static $fields = [];
   protected static $fieldTypes;
-  protected $id;
   protected $comesFromDb;
   protected $changed = false;
 

@@ -114,6 +114,10 @@ class Field {
   public function isUnique() {
     return $this->isUnique;
   }
+
+  public function formatValue($value) {
+    return $value;
+  }
 }
 
 require_once 'DatetimeField.php';

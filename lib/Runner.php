@@ -6,6 +6,7 @@ namespace Defiant;
 class Runner {
   protected $databases;
   protected $models;
+  protected $loginClass;
   protected $router;
   protected $renderers = [
     'html' => '\Defiant\View\PlainRenderer',
@@ -14,6 +15,7 @@ class Runner {
   ];
   protected $statusMessages = [
     200 => 'OK',
+    302 => 'Found',
     404 => 'Not Found',
     500 => 'Internal Server Error',
   ];
@@ -68,6 +70,10 @@ class Runner {
 
     if (isset($config['renderers'])) {
       $this->renderers = array_merge($this->renderers, $config['renderers']);
+    }
+
+    if (isset($config['userClass'])) {
+      $this->userClass = $config['userClass'];
     }
   }
 
@@ -159,5 +165,9 @@ class Runner {
     }
 
     return null;
+  }
+
+  public function getUserClass() {
+    return $this->userClass;
   }
 }

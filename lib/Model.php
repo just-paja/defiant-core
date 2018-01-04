@@ -174,8 +174,8 @@ abstract class Model {
   }
 
   public function setState(array $data) {
-    foreach ($data as $field => $value) {
-      $this->setValue($field, $value);
+    foreach ($data as $fieldName => $value) {
+      $this->setValue($fieldName, $value, true);
     }
     return $this;
   }
@@ -185,14 +185,19 @@ abstract class Model {
     return $this;
   }
 
-  public function setValue($field, $value) {
-    if ($this->hasField($field)) {
-      if ($this->$field !== $value) {
-        $this->$field = $value;
+  public function setValue($fieldName, $value, $noFormat = false) {
+    $field = $this->getField($fieldName);
+    if ($field) {
+      if ($this->$fieldName !== $value) {
+        if ($noFormat) {
+          $this->$fieldName = $value;
+        } else {
+          $this->$fieldName = $field->formatValue($value);
+        }
         $this->changed = true;
       }
     } else {
-      throw new Model\Error(sprintf('Model "%s" does not have field "%s"', get_called_class(), $field));
+      throw new Model\Error(sprintf('Model "%s" does not have field "%s"', get_called_class(), $fieldName));
     }
     return $this;
   }

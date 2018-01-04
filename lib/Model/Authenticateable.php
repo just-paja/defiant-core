@@ -5,6 +5,7 @@ namespace Defiant\Model;
 abstract class Authenticateable extends \Defiant\Model {
   const FIELD_USERNAME = 'username';
   const FIELD_PASSWORD = 'password';
+  const FIELD_SESSION_USER_ID = 'userId';
 
   public static function authenticate($username, $password) {
     $connector = static::getConnector();
@@ -22,6 +23,10 @@ abstract class Authenticateable extends \Defiant\Model {
       throw new \Defiant\Model\FieldError(sprintf('Invalid password'));
     }
 
-    return $item;
+    return $user;
+  }
+
+  public static function login(\Defiant\Http\Request $request, self $user) {
+    $request->session->set(static::FIELD_SESSION_USER_ID, $user->id);
   }
 }

@@ -12,6 +12,7 @@ class View {
   protected $request;
   protected $runner;
   protected $status = 200;
+  protected $user = null;
 
   public function __construct(Runner $runner = null, Http\Request $request = null) {
     if ($runner) {
@@ -43,6 +44,20 @@ class View {
     return $this->status;
   }
 
+  public function getUser() {
+    if (!$this->user) {
+      $userId = $this->request->getUserId();
+      $userClass = $this->runner->getUserClass();
+      if ($userId) {
+        $this->user = $this->models
+          ->getByClassName($userClass)
+          ->objects
+          ->find($userId);
+      }
+    }
+    return $this->user;
+  }
+
   public function isAccessible() {
     return true;
   }
@@ -64,6 +79,11 @@ class View {
   }
 
   public function url($path, array $params = []) {
-    $this->runner->getRouter()->getUrl($path, $params);
+    return $this->runner->getRouter()->getUrl($path, $params);
+  }
+
+  public function redirect($location) {
+    $this->status = 302;
+    $this->headers['Location'] = $location;
   }
 }

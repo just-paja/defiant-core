@@ -9,12 +9,17 @@ class Request {
   protected $params = [];
   protected $query = [];
 
-  public function __construct($server) {
+  public static function fromGlobals() {
+    return new self($_SERVER, $_GET, $_POST, $_SESSION);
+  }
+
+  public function __construct(&$server, &$get, &$post, &$session) {
     $this->method = strtolower($server['REQUEST_METHOD']);
     $this->host = $server['HTTP_HOST'];
     $this->protocol = $this->isSsl($server) ? 'https' : 'http';
     $pathSplit = explode('?', $server['REQUEST_URI']);
-    $this->body = $_POST;
+    $this->body = $post;
+    $this->session = new RequestSession($session);
     $this->path = $pathSplit[0];
     if (isset($pathSplit[1])) {
       $this->parseQueryString($pathSplit[1]);
@@ -55,5 +60,9 @@ class Request {
 
   public function setParams(array $params) {
     $this->params = $params;
+  }
+
+  public function getUserId() {
+    return $this->session->get(\Defiant\Model\Authenticateable::FIELD_SESSION_USER_ID);
   }
 }

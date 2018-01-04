@@ -22,6 +22,15 @@ class Collection extends \Defiant\Resource\Collection {
     }
   }
 
+  public function getByClassName($className) {
+    foreach ($this->resources as $resource) {
+      if ($resource->getModel() === $className) {
+        return $resource;
+      }
+    }
+    return null;
+  }
+
   public function replace($resources) {
     foreach ($resources as $model) {
       $databaseName = $model::getDatabaseName();

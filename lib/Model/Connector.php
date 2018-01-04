@@ -45,6 +45,10 @@ class Connector {
     return $this->create($data);
   }
 
+  public function getModel() {
+    return $this->model;
+  }
+
   public function getDatabase() {
     return $this->database;
   }

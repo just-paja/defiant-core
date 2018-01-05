@@ -57,7 +57,7 @@ class Request {
         $this->query[$key] = $value;
       } else {
         $key = substr($key, 0, $bracketsIndex);
-        if (is_array($this->query[$key])) {
+        if (isset($this->query[$key]) && is_array($this->query[$key])) {
           $this->query[$key][] = $value;
         } else {
           $this->query[$key] = [$value];
@@ -67,7 +67,7 @@ class Request {
   }
 
   public function query($key, $defaultValue) {
-    if (isset($this->query[$key]) && (string) $this->query[$key] !== '') {
+    if (!empty($this->query[$key])) {
       return $this->query[$key];
     }
     return $defaultValue;

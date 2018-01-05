@@ -115,7 +115,7 @@ class Route {
 
     if (isset($modifiers[static::PARAM_METHOD_TOGGLE])) {
       foreach ($modifiers[static::PARAM_METHOD_TOGGLE] as $key => $value) {
-        if (isset($params[$key])) {
+        if (isset($params[$key]) && $params[$key] == $value) {
           unset($params[$key]);
         } else {
           $params[$key] = $value;

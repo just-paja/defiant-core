@@ -35,7 +35,7 @@ class Router {
     return null;
   }
 
-  public function getUrl($name, array $params = []) {
+  public function getUrl($name, array $params = [], $modifiers = null) {
     $resolvedRoute = null;
     foreach ($this->routes as $route) {
       if ($route->name === $name) {
@@ -44,7 +44,7 @@ class Router {
       }
     }
     if ($resolvedRoute) {
-      return $route->getTranslatedPath($params);
+      return $route->getTranslatedPath($params, $modifiers);
     }
     throw new RoutingError(sprintf('Path specified as %s was not found', $name));
   }

@@ -26,6 +26,10 @@ class Request {
     }
   }
 
+  public function getQuery() {
+    return $this->query;
+  }
+
   public function getParams() {
     return $this->params;
   }
@@ -45,9 +49,20 @@ class Request {
     $arguments = explode('&', $queryString);
     foreach ($arguments as $argument) {
       $argumentSplit = explode('=', $argument);
-      $param = $argumentSplit[0];
-      $value = isset($argumentSplit[1]) ? $argumentSplit[1] : null;
-      $this->query[$param] = $value;
+      $key = urldecode($argumentSplit[0]);
+      $value = isset($argumentSplit[1]) ? urldecode($argumentSplit[1]) : null;
+      $bracketsIndex = strpos($key, '[]');
+
+      if ($bracketsIndex === false) {
+        $this->query[$key] = $value;
+      } else {
+        $key = substr($key, 0, $bracketsIndex);
+        if (is_array($this->query[$key])) {
+          $this->query[$key][] = $value;
+        } else {
+          $this->query[$key] = [$value];
+        }
+      }
     }
   }
 

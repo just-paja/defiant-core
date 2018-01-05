@@ -222,6 +222,7 @@ abstract class Model {
       }
     } else {
       $this->id = $database->insert($tableName, $data);
+      $this->saveRelations();
     }
     return $this;
   }

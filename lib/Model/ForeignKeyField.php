@@ -38,4 +38,11 @@ class ForeignKeyField extends FieldSet {
     }
     return 0;
   }
+
+  public function resolveFilterColumnAndTable() {
+    return [
+      null,
+      $this->getKeyFieldName(),
+    ];
+  }
 }

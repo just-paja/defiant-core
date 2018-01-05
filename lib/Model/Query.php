@@ -3,17 +3,24 @@
 namespace Defiant\Model;
 
 class Query {
+  const OPERATION_IN = 'in';
+  const OPERATION_CONTAINS = 'contains';
+
+  protected $distinct = false;
   protected $mode = 'select';
   protected $database;
   protected $filter;
+  protected $joins;
   protected $jumps;
   protected $limit;
   protected $model;
   protected $offset;
   protected $orderBy;
+  protected $aliasCount = 0;
 
   public function __construct(\Defiant\Database $database, $model) {
     $this->filter = [];
+    $this->joins = [];
     $this->jumps = [];
     $this->database = $database;
     $this->setModel($model);
@@ -31,6 +38,11 @@ class Query {
     $this->mode = 'count';
     $data = $this->select()->fetch(\PDO::FETCH_ASSOC);
     return $data['count'];
+  }
+
+  public function distinct($really = true) {
+    $this->distinct = $really;
+    return $this;
   }
 
   public function filter(array $conds) {
@@ -98,9 +110,25 @@ class Query {
   protected function getJumpJoinCond($jump) {
     $srcTable = $this->model::getTableName();
     $cond = [];
-    $cond[] = '`'.$srcTable.'`.`'.$jump['fk'].'`';
-    $cond[] = '=';
-    $cond[] = '`'.$jump['model']::getTableName().'`.`id`';
+    if ($jump['reverse']) {
+      $cond[] = '`'.$srcTable.'`.`id`';
+      $cond[] = '=';
+      $cond[] = '`'.$jump['alias'].'`.`'.$jump['fk'].'`';
+    } else {
+      $cond[] = '`'.$srcTable.'`.`'.$jump['fk'].'`';
+      $cond[] = '=';
+      $cond[] = '`'.$jump['alias'].'`.`id`';
+    }
+
+    if ($jump['extraConds']) {
+      $extraCondsQuery = [];
+      foreach ($jump['extraConds'] as $field => $value) {
+        $extraCondsQuery[] = '`'.$jump['alias'].'`.`'.$field.'` = '.$value;
+      }
+      $cond[] = 'AND';
+      $cond[] = join(' AND ', $extraCondsQuery);
+    }
+
     return implode(' ', $cond);
   }
 
@@ -110,7 +138,7 @@ class Query {
     if ($jump) {
       $lastJump = $this->getLastJump();
       $columns = $this->mapColumnWithTableName(
-        $lastJump['model']::getTableName(),
+        $lastJump['alias'],
         $lastJump['model']::getFieldNames()
       );
     } else {
@@ -122,10 +150,26 @@ class Query {
 
     $query = ['SELECT'];
 
+    if ($this->distinct) {
+      $query[] = 'DISTINCT';
+    }
+
     if ($this->mode === 'count') {
       $query[] = 'COUNT(*) as count';
     } else {
       $query[] = implode(', ', $columns);
+    }
+
+    $queryParams = [];
+    $filterStatement = [];
+
+    if ($this->filter) {
+      foreach ($this->filter as $field => $value) {
+        $fs = $this->getFilterStatement($field, $value, $queryParams);
+        if ($fs) {
+          $filterStatement[] = $fs;
+        }
+      }
     }
 
     $query[] = 'FROM';
@@ -134,17 +178,15 @@ class Query {
     foreach ($this->jumps as $jump) {
       $query[] = 'JOIN';
       $query[] = $jump['model']::getTableName();
+      $query[] = 'AS '.$jump['alias'];
       $query[] = 'ON('.$this->getJumpJoinCond($jump).')';
     }
 
-    $queryParams = [];
-    $filterStatement = [];
-
-    if ($this->filter) {
-      foreach ($this->filter as $field => $value) {
-        $filterStatement[] = "`$baseTableName`.`$field` = :$field";
-        $queryParams[$field] = $value;
-      }
+    foreach ($this->joins as $join) {
+      $query[] = 'JOIN';
+      $query[] = $join['model']::getTableName();
+      $query[] = 'AS '.$join['alias'];
+      $query[] = 'ON('.$this->getJumpJoinCond($join).')';
     }
 
     if (sizeof($filterStatement) > 0) {
@@ -161,14 +203,78 @@ class Query {
       $query[] = 'LIMIT';
       $query[] = "$this->offset, $this->limit";
     }
-
+    // error_log(implode(' ', $query));
+    // var_dump(implode(' ', $query));
+    // var_dump($queryParams);
+    // exit;
     return $this->database->query(implode(' ', $query), $queryParams);
+  }
+
+  public function getFilterStatement($fieldDesc, $value, &$queryParams) {
+    $separatorIndex = strpos($fieldDesc, '__');
+    $baseTableName = $this->model::getTableName();
+
+    if ($separatorIndex !== false) {
+      $fieldName = substr($fieldDesc, 0, $separatorIndex);
+      $operation = substr($fieldDesc, $separatorIndex + 2);
+
+      if ($operation == static::OPERATION_IN) {
+        if (sizeof($value) > 0) {
+          list($table, $fieldColumn) = $this->resolveColumnAndTable($fieldName);
+          $queryValue = join(',', $value);
+          if (!$table) {
+            $table = $baseTableName;
+          }
+          return '`'.$table.'`.`'.$fieldColumn.'` IN ('.$queryValue.')';
+        }
+      }
+      if ($operation == static::OPERATION_CONTAINS) {
+        foreach ($value as $itemId) {
+          $field = $this->model::getField($fieldName);
+          $this->joinViaForeignKey(
+            $field->getTroughModel(),
+            $field->getFkFieldName(),
+            true,
+            [$field->getViaFieldName() => $itemId]
+          );
+        }
+      }
+    } else {
+      list($table, $fieldColumn) = $this->resolveColumnAndTable($fieldDesc);
+      if (!$table) {
+        $table = $baseTableName;
+      }
+      $queryParams[$fieldDesc] = $value;
+      return "`$table`.`$fieldColumn` = :$fieldDesc";
+    }
+    return null;
+  }
+
+  public function resolveColumnAndTable($fieldName) {
+    $field = $this->model::getField($fieldName);
+
+    if ($field instanceof \Defiant\Model\ManyToManyField) {
+      $this->joinViaForeignKey(
+        $field->getTroughModel(),
+        $field->getFkFieldName(),
+        true
+      );
+      return $field->resolveFilterColumnAndTable();
+    }
+
+    if ($field instanceof \Defiant\Model\ForeignKeyField) {
+      return $field->resolveFilterColumnAndTable();
+    }
+
+    return [
+      $this->model::getTableName(),
+      $fieldName,
+    ];
   }
 
   public function constructOrderQuery() {
     $cols = explode(',', $this->orderBy);
     $query = [];
-    var_dump($this->orderBy);
     foreach ($cols as $col) {
       if (strpos($col, '-') === 0) {
         $col = $col.' DESC';
@@ -180,11 +286,31 @@ class Query {
     return implode(',', $query);
   }
 
-  public function jumpToModelViaForeignKey($model, $fk) {
+  public function jumpToModelViaForeignKey($model, $fk, $reverse = false) {
     $this->jumps[] = [
       "model" => $model,
       "fk" => $fk,
+      "reverse" => $reverse,
+      "alias" => 'jump_'.$this->aliasCount++,
+      "extraConds" => null,
     ];
+    return $this;
+  }
+
+  public function joinViaForeignKey($model, $fk, $reverse = false, $extraConds = null) {
+    $spec = [
+      "model" => $model,
+      "fk" => $fk,
+      "reverse" => $reverse,
+      "alias" => 'join_'.$this->aliasCount++,
+      "extraConds" => null,
+    ];
+
+    if ($extraConds) {
+      $spec['extraConds'] = $extraConds;
+    }
+
+    $this->joins[] = $spec;
     return $this;
   }
 }

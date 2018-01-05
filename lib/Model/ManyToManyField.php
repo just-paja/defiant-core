@@ -61,4 +61,23 @@ class ManyToManyField extends FieldSet implements CustomSaveField {
       $item->delete();
     }
   }
+
+  public function resolveFilterColumnAndTable() {
+    return [
+      $this->trough::getTableName(),
+      $this->trough::getField($this->via)->getKeyFieldName(),
+    ];
+  }
+
+  public function getFkFieldName() {
+    return $this->trough::getField($this->fk)->getKeyFieldName();
+  }
+
+  public function getViaFieldName() {
+    return $this->trough::getField($this->via)->getKeyFieldName();
+  }
+
+  public function getTroughModel() {
+    return $this->trough;
+  }
 }

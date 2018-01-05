@@ -218,13 +218,41 @@ abstract class Model {
     if ($isStored) {
       if ($this->changed) {
         $database->update($tableName, $this->id, $data);
-      } else {
-        var_dump('not changed');
+        $this->saveRelations();
       }
     } else {
       $this->id = $database->insert($tableName, $data);
     }
     return $this;
+  }
+
+  public function delete() {
+    $isStored = $this->isStored();
+    $tableName = $this::getTableName();
+    $database = $this::getConnector()->getDatabase();
+
+    if ($isStored) {
+        $database->delete($tableName, $this->id);
+    }
+    return $this;
+  }
+
+  public function getCustomSaveFields() {
+    $fields = $this->getFields();
+    $customSave = [];
+    foreach ($fields as $field) {
+      if ($field instanceof \Defiant\Model\CustomSaveField) {
+        $customSave[] = $field;
+      }
+    }
+    return $customSave;
+  }
+
+  public function saveRelations() {
+    $fields = $this->getCustomSaveFields();
+    foreach ($fields as $field) {
+      $field->saveValue($this);
+    }
   }
 
   public function toDbObject($opportunity = null) {

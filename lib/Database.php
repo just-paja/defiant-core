@@ -119,4 +119,15 @@ abstract class Database {
     }
     return $sth;
   }
+
+  public function delete($table, $id) {
+    $query = [
+      'DELETE FROM',
+       $table,
+       'WHERE id = :id',
+    ];
+    $this->query(join(' ', $query), [
+      "id" => $id,
+    ]);
+  }
 }

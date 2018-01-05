@@ -10,6 +10,7 @@ class Query {
   protected $limit;
   protected $model;
   protected $offset;
+  protected $orderBy;
 
   public function __construct(\Defiant\Database $database, $model) {
     $this->filter = [];
@@ -66,6 +67,11 @@ class Query {
     }
     $item->setComesFromDb();
     return $item;
+  }
+
+  public function orderBy($orderBy) {
+    $this->orderBy = $orderBy;
+    return $this;
   }
 
   protected function map(array $data) {
@@ -146,12 +152,32 @@ class Query {
       $query[] = implode(' AND ', $filterStatement);
     }
 
+    if ($this->orderBy) {
+      $query[] = 'ORDER BY';
+      $query[] = $this->constructOrderQuery();
+    }
+
     if ($this->offset || $this->limit) {
       $query[] = 'LIMIT';
       $query[] = "$this->offset, $this->limit";
     }
 
     return $this->database->query(implode(' ', $query), $queryParams);
+  }
+
+  public function constructOrderQuery() {
+    $cols = explode(',', $this->orderBy);
+    $query = [];
+    var_dump($this->orderBy);
+    foreach ($cols as $col) {
+      if (strpos($col, '-') === 0) {
+        $col = $col.' DESC';
+      } else {
+        $col = $col.' ASC';
+      }
+      $query[] = $col;
+    }
+    return implode(',', $query);
   }
 
   public function jumpToModelViaForeignKey($model, $fk) {

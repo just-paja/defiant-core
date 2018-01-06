@@ -60,6 +60,7 @@ class ManyToManyField extends FieldSet implements CustomSaveField {
       ])->first();
       $item->delete();
     }
+    unset($instance->$name);
   }
 
   public function resolveFilterColumnAndTable() {

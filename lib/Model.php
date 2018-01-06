@@ -10,10 +10,12 @@ abstract class Model extends \Defiant\Resource\ClassCollector {
   protected static $databaseName = null;
   protected static $fields = [];
   protected static $fieldTypes;
+  protected $data;
   protected $comesFromDb;
   protected $changed = false;
 
   public function __construct(array $data = []) {
+    $this->data = [];
     if ($data) {
       $this->setState($data);
     }
@@ -24,8 +26,16 @@ abstract class Model extends \Defiant\Resource\ClassCollector {
     return $this->getFieldValue($fieldName);
   }
 
+  public function __isset($fieldName) {
+    return $this->hasField($fieldName);
+  }
+
   public function __set($fieldName, $value) {
     return $this->setValue($fieldName, $value);
+  }
+
+  public function __unset($fieldName) {
+    unset($this->data[$fieldName]);
   }
 
   public static function getConnector() {
@@ -140,6 +150,10 @@ abstract class Model extends \Defiant\Resource\ClassCollector {
     return false;
   }
 
+  public function hasValue($fieldName) {
+    return isset($this->data[$fieldName]);
+  }
+
   public static function setConnector($connector) {
     return static::$connectors[get_called_class()] = $connector;
   }
@@ -151,8 +165,8 @@ abstract class Model extends \Defiant\Resource\ClassCollector {
       throw new Model\Error(sprintf('Field "%s" does not exist on model "%s"', $fieldName, get_called_class()));
     }
 
-    return $field->getValue($this, isset($this->$fieldName) ?
-      $this->$fieldName :
+    return $field->getValue($this, $this->hasValue($fieldName) ?
+      $this->data[$fieldName] :
       null
     );
   }
@@ -177,11 +191,11 @@ abstract class Model extends \Defiant\Resource\ClassCollector {
   public function setValue($fieldName, $value, $noFormat = false) {
     $field = $this->getField($fieldName);
     if ($field) {
-      if ($this->$fieldName !== $value) {
+      if (!$this->hasValue($fieldName) || $this->data[$fieldName] !== $value) {
         if ($noFormat) {
-          $this->$fieldName = $value;
+          $this->data[$fieldName] = $value;
         } else {
-          $this->$fieldName = $field->formatValue($value);
+          $this->data[$fieldName] = $field->formatValue($value);
         }
         $this->changed = true;
       }

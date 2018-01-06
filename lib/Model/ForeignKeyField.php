@@ -2,7 +2,7 @@
 
 namespace Defiant\Model;
 
-class ForeignKeyField extends FieldSet {
+class ForeignKeyField extends FieldSet implements CustomSaveField {
   public function expandFields() {
     $keyFieldName = $this->getKeyFieldName();
     return [
@@ -22,6 +22,10 @@ class ForeignKeyField extends FieldSet {
   }
 
   public function getValue($instance, $value) {
+    if ($value instanceof $this->model) {
+      return $value;
+    }
+
     $keyFieldName = $this->getKeyFieldName();
     $keyValue = $instance->$keyFieldName;
     $model = $this->model;
@@ -44,5 +48,24 @@ class ForeignKeyField extends FieldSet {
       null,
       $this->getKeyFieldName(),
     ];
+  }
+
+  public function saveValue(\Defiant\Model $instance) {
+    $name = $this->name;
+
+    if (!$instance->hasValue($name)) {
+      return;
+    }
+
+    $value = $instance->$name;
+
+    if (!($value instanceof $this->model)) {
+      return;
+    }
+
+    $keyFieldName = $this->getKeyFieldName();
+    $instance->$keyFieldName = $value->id;
+    unset($instance->$name);
+    $instance->save();
   }
 }

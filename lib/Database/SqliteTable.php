@@ -5,12 +5,20 @@ namespace Defiant\Database;
 class SqliteTable extends \Defiant\Database\Table {
   protected function loadColumns() {
     $this->columns = [];
-    $result = $this->connection->query("PRAGMA TABLE_INFO(".$this->name.")")->fetchAll();
+    $result = $this->connection->query("PRAGMA TABLE_INFO(".$this->name.")")->fetchAll(\PDO::FETCH_ASSOC);
 
     foreach ($result as $column) {
       $typeInfo = explode('(', $column['type']);
       $type = trim($typeInfo[0]);
       $length = isset($typeInfo[1]) ? intval($typeInfo[1]) : null;
+      if (strpos($type, ' ') !== false) {
+        if (strpos($type, 'UNSIGNED')) {
+          $typeExploded = explode(' ', $type);
+          $type = $typeExploded[0];
+          $column['isUnsigned'] = true;
+        }
+      }
+
       $def = [
         "dbType" => $type,
         "default" => $column['dflt_value'],
@@ -19,11 +27,16 @@ class SqliteTable extends \Defiant\Database\Table {
         "isAutoincrement" => !!$column['pk'],
         "length" => $length,
       ];
+      if (isset($column['isUnsigned'])) {
+        $def['isUnsigned'] = $column['isUnsigned'];
+      }
       if (in_array($type, [
         'INT',
         'INTEGER',
       ])) {
-        $def["isUnsigned"] = false;
+        if (!isset($def['isUnsigned'])) {
+          $def['isUnsigned'] = false;
+        }
         if ($def['default']) {
           $def['default'] = intval($def['default']);
         }

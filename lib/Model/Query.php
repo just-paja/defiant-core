@@ -239,8 +239,9 @@ class Query {
             $field->getTroughModel(),
             $field->getFkFieldName(),
             true,
-            [$field->getViaFieldName() => $itemId]
+            [$field->getViaFieldName() => ':'.$fieldDesc]
           );
+          $queryParams[$fieldDesc] = $itemId;
         }
       }
     } else {

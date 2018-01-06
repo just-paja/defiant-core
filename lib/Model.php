@@ -43,7 +43,10 @@ abstract class Model {
 
   public static function getConnector() {
     $class = get_called_class();
-    return isset(static::$connectors[$class]) ? static::$connectors[$class] : null;
+    if (isset(static::$connectors[$class])) {
+      return static::$connectors[$class];
+    }
+    throw new \Defiant\Model\ConnectorError(sprintf('Undefined connector for model %s', $class));
   }
 
   public static function getDatabaseName() {

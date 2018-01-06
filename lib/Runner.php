@@ -15,11 +15,14 @@ class Runner {
   ];
   protected $statusMessages = [
     200 => 'OK',
+    204 => 'No Content',
     302 => 'Found',
+    403 => 'Forbidden',
     404 => 'Not Found',
     500 => 'Internal Server Error',
   ];
   protected $viewBadRequest = ['\Defiant\View\ServerError', 'badRequest'];
+  protected $viewForbidden = ['\Defiant\View\ServerError', 'forbidden'];
   protected $viewFatalError = ['\Defiant\View\ServerError', 'fatalError'];
   protected $viewNotFound = ['\Defiant\View\ServerError', 'notFound'];
 
@@ -88,6 +91,10 @@ class Runner {
     return $this->router;
   }
 
+  public function getSessionCsrfToken() {
+    return \Defiant\Model\CsrfToken::getForSessionId(session_id());
+  }
+
   public function resolveRequest(Http\Request $request) {
     try {
       $this->serveResponseForRequest($request);
@@ -95,6 +102,10 @@ class Runner {
       $this->resolveCallback($this->viewNotFound, $request);
     } catch (\Defiant\Http\BadRequest $exception) {
       $this->resolveCallback($this->viewBadRequest, $request, [
+        "exception" => $exception,
+      ]);
+    } catch (\Defiant\Http\Forbidden $exception) {
+      $this->resolveCallback($this->viewForbidden, $request, [
         "exception" => $exception,
       ]);
     } catch (\Exception $exception) {
@@ -105,6 +116,7 @@ class Runner {
   }
 
   public function serveResponseForRequest(Http\Request $request) {
+    $this->validateForCsrf($request);
     $route = $this->router->getRoute($request);
 
     if ($route) {
@@ -173,5 +185,18 @@ class Runner {
 
   public function getUserConnector() {
     return $this->models->getByClassName($this->getUserClass());
+  }
+
+  public function validateForCsrf($request) {
+    $sessionToken = $this->getSessionCsrfToken();
+    if ($request->isCsrfProtected()) {
+      $requestToken = $request->getCsrfToken();
+      if (!$sessionToken || !$requestToken) {
+        throw new Http\Forbidden('Missing CSRF token');
+      }
+      if ($sessionToken->token !== $requestToken) {
+        throw new Http\Forbidden('Invalid CSRF token');
+      }
+    }
   }
 }

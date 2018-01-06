@@ -10,8 +10,10 @@ class PugRenderer extends Renderer {
       throw new Error('Pug is not installed. Please require pug-php/pug with composer');
     }
     parent::__construct($runner);
+    $renderer = &$this;
     $runner = $this->runner;
     $this->pug = new \Tale\Pug\Renderer();
+    $this->pug->addFilter('csrfTokenField', [$this, 'renderCsrfField']);
   }
 
   public function renderFile($template, array $context = array()) {

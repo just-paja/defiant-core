@@ -3,6 +3,9 @@
 namespace Defiant\Http;
 
 class Request {
+  const CSRF_FIELD_NAME = 'csrfSignature';
+  const CSRF_PROTECTED_METHODS = ['post', 'put', 'patch'];
+
   public $method;
   public $path;
   public $host;
@@ -26,12 +29,31 @@ class Request {
     }
   }
 
+  public function isCsrfProtected() {
+    return in_array($this->method, static::CSRF_PROTECTED_METHODS);
+  }
+
+  public function getBodyParam($key, $defaultValue) {
+    return static::getParamFrom($this->body, $key, $defaultValue);
+  }
+
+  public function getCsrfToken() {
+    return $this->getBodyParam(static::CSRF_FIELD_NAME, null);
+  }
+
   public function getQuery() {
     return $this->query;
   }
 
   public function getParams() {
     return $this->params;
+  }
+
+  public function getParamFrom(&$source, $key, $defaultValue) {
+    if (!empty($source[$key])) {
+      return $source[$key];
+    }
+    return $defaultValue;
   }
 
   protected function isSsl($server) {
@@ -67,10 +89,7 @@ class Request {
   }
 
   public function query($key, $defaultValue) {
-    if (!empty($this->query[$key])) {
-      return $this->query[$key];
-    }
-    return $defaultValue;
+    return static::getParamFrom($this->query, $key, $defaultValue);
   }
 
   public function setParams(array $params) {

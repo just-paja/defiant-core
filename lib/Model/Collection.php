@@ -3,6 +3,10 @@
 namespace Defiant\Model;
 
 class Collection extends \Defiant\Resource\Collection {
+  const SYSTEM_MODELS = [
+    '\Defiant\Model\CsrfToken',
+  ];
+
   protected $databases;
 
   public function __construct(
@@ -10,7 +14,7 @@ class Collection extends \Defiant\Resource\Collection {
     $resources = null
   ) {
     $this->databases = $databases;
-    parent::__construct($resources);
+    parent::__construct($this->polluteResourcesWithSystemModels($resources));
   }
 
   public function __get($model) {
@@ -31,7 +35,15 @@ class Collection extends \Defiant\Resource\Collection {
     return null;
   }
 
+  public function polluteResourcesWithSystemModels(Array $resources = null) {
+    if ($resources) {
+      return array_merge(static::SYSTEM_MODELS, $resources);
+    }
+    return null;
+  }
+
   public function replace($resources) {
+    $resources = $this->polluteResourcesWithSystemModels($resources);
     foreach ($resources as $model) {
       $databaseName = $model::getDatabaseName();
       $this->resources[$model] = Connector::createFor(

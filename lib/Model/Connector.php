@@ -8,14 +8,13 @@ class Connector {
   protected $model;
 
   public static function createFor($model, \Defiant\Database $database) {
-    $connector = $model::getConnector();
-
-    if (!$connector) {
+    try {
+     return $model::getConnector();
+   } catch(\Defiant\Model\ConnectorError $e) {
       $connector = new static($model, $database);
       $model::setConnector($connector);
+      return $connector;
     }
-
-    return $connector;
   }
 
   public function __construct($model, \Defiant\Database $database = null) {

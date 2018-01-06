@@ -2,41 +2,11 @@
 
 namespace Defiant;
 
-define('MODEL_INSERT', 'MODEL_INSERT');
-define('MODEL_UPDATE', 'MODEL_UPDATE');
-
-abstract class Model extends \Defiant\Resource\ClassCollector {
+abstract class Model extends \Defiant\Model\ModelAccessor {
   protected static $connectors = [];
   protected static $databaseName = null;
-  protected static $fields = [];
-  protected static $fieldTypes;
-  protected $data;
   protected $comesFromDb;
-  protected $changed = false;
 
-  public function __construct(array $data = []) {
-    $this->data = [];
-    if ($data) {
-      $this->setState($data);
-    }
-    $this->changed = false;
-  }
-
-  public function __get($fieldName) {
-    return $this->getFieldValue($fieldName);
-  }
-
-  public function __isset($fieldName) {
-    return $this->hasField($fieldName);
-  }
-
-  public function __set($fieldName, $value) {
-    return $this->setValue($fieldName, $value);
-  }
-
-  public function __unset($fieldName) {
-    unset($this->data[$fieldName]);
-  }
 
   public static function getConnector() {
     $class = get_called_class();
@@ -50,158 +20,16 @@ abstract class Model extends \Defiant\Resource\ClassCollector {
     return static::$databaseName;
   }
 
-  public static function getFields() {
-    return array_merge([
-      new Model\IntegerField('id', [
-        "isPrimary" => true,
-        "isAutoincrement" => true,
-      ]),
-    ], static::getFieldsFromDefinition(static::$fields, false), [
-      new Model\DatetimeField('createdAt', [
-        "setNowOnInsert" => true,
-        "isNull" => true,
-      ]),
-      new Model\DatetimeField('updatedAt', [
-        "setNowOnUpdate" => true,
-        "isNull" => true,
-      ]),
-    ]);
-  }
-
-  public static function getExpandedFields() {
-    $fields = array_merge([
-      new Model\IntegerField('id', [
-        "isPrimary" => true,
-        "isAutoincrement" => true,
-      ]),
-    ], static::getFieldsFromDefinition(static::$fields, true));
-
-    $fields[] = new Model\DatetimeField('createdAt', [
-      "setNowOnInsert" => true,
-      "isNull" => true,
-    ]);
-    $fields[] = new Model\DatetimeField('updatedAt', [
-      "setNowOnUpdate" => true,
-      "isNull" => true,
-    ]);
-    return $fields;
-  }
-
-  public static function getFieldFromCollection($collection, $fieldName) {
-    foreach ($collection as $field) {
-      if ($field->getName() == $fieldName) {
-        return $field;
-      }
-    }
-    return null;
-  }
-
-  public static function getField($fieldName) {
-    $field = static::getFieldFromCollection(static::getFields(), $fieldName);
-    if (!$field) {
-      $field = static::getFieldFromCollection(static::getExpandedFields(), $fieldName);
-    }
-    return $field;
-  }
-
-  public static function getFieldNames() {
-    $fields = static::getExpandedFields();
-    $names = [];
-    foreach ($fields as $field) {
-      if ($field::dbType) {
-        $names[] = $field->getName();
-      }
-    }
-    return $names;
-  }
-
-  public static function getFieldsFromDefinition($fieldDef, $expand = false) {
-    $fields = [];
-
-    foreach ($fieldDef as $fieldName => $fieldType) {
-      $field = static::getFieldFromType($fieldName, $fieldType);
-      if ($expand && is_subclass_of($field, '\Defiant\Model\FieldSet')) {
-        $fields = array_merge($fields, static::getFieldsFromDefinition($field->expandFields()));
-      } else {
-        $fields[] = $field;
-      }
-    }
-    return $fields;
-  }
-
-  public static function getFieldFromType($fieldName, $fieldType, array $fieldDef = array()) {
-    if (is_array($fieldType)) {
-      return static::getFieldFromType($fieldName, $fieldType['type'], $fieldType);
-    }
-    return new $fieldType($fieldName, $fieldDef);
-  }
-
   public static function getTableName() {
     return str_replace(['\\', 'Model'], '', lcfirst(get_called_class()));
-  }
-
-  public static function hasField($fieldName) {
-    $fields = static::getExpandedFields();
-    foreach ($fields as $field) {
-      if ($field->getName() === $fieldName) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  public function hasValue($fieldName) {
-    return isset($this->data[$fieldName]);
   }
 
   public static function setConnector($connector) {
     return static::$connectors[get_called_class()] = $connector;
   }
 
-  public function getFieldValue($fieldName) {
-    $field = static::getField($fieldName);
-
-    if (!$field) {
-      throw new Model\Error(sprintf('Field "%s" does not exist on model "%s"', $fieldName, get_called_class()));
-    }
-
-    return $field->getValue($this, $this->hasValue($fieldName) ?
-      $this->data[$fieldName] :
-      null
-    );
-  }
-
   public function setComesFromDb() {
     $this->comesFromDb = true;
-    return $this;
-  }
-
-  public function setState(array $data) {
-    foreach ($data as $fieldName => $value) {
-      $this->setValue($fieldName, $value, true);
-    }
-    return $this;
-  }
-
-  public function setUnchanged() {
-    $this->changed = false;
-    return $this;
-  }
-
-  public function setValue($fieldName, $value, $noFormat = false) {
-    $field = $this->getField($fieldName);
-    if ($field) {
-      if (!$this->hasValue($fieldName) || $this->data[$fieldName] !== $value) {
-        if ($noFormat) {
-          $this->data[$fieldName] = $value;
-        } else {
-          $this->data[$fieldName] = $field->formatValue($value);
-        }
-        $this->changed = true;
-      }
-    } else {
-      throw new Model\Error(sprintf('Model "%s" does not have field "%s"', get_called_class(), $fieldName));
-    }
     return $this;
   }
 
@@ -276,5 +104,3 @@ abstract class Model extends \Defiant\Resource\ClassCollector {
     return $array;
   }
 }
-
-require_once 'Model/fields.php';

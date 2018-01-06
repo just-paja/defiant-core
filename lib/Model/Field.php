@@ -16,7 +16,7 @@ abstract class Field extends \Defiant\Resource\ClassCollector {
   public static function createFromDef($name, $def) {
     $fieldType = static::getFieldTypeByDef($def);
     if (!$fieldType) {
-      throw new Error('Could not find model by definition', $def);
+      throw new Error(sprintf('Could not find field "%s" by definition', $name), $def);
     }
     return new $fieldType($name, $def);
   }

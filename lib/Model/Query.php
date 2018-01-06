@@ -281,7 +281,7 @@ class Query {
     $query = [];
     foreach ($cols as $col) {
       if (strpos($col, '-') === 0) {
-        $col = $col.' DESC';
+        $col = substr($col, 1).' DESC';
       } else {
         $col = $col.' ASC';
       }

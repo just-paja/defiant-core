@@ -14,7 +14,7 @@ class Collection extends \Defiant\Resource\Collection {
     $resources = null
   ) {
     $this->databases = $databases;
-    parent::__construct($this->polluteResourcesWithSystemModels($resources));
+    parent::__construct($resources);
   }
 
   public function __get($model) {
@@ -35,15 +35,7 @@ class Collection extends \Defiant\Resource\Collection {
     return null;
   }
 
-  public function polluteResourcesWithSystemModels(Array $resources = null) {
-    if ($resources) {
-      return array_merge(static::SYSTEM_MODELS, $resources);
-    }
-    return null;
-  }
-
   public function replace($resources) {
-    $resources = $this->polluteResourcesWithSystemModels($resources);
     foreach ($resources as $model) {
       $databaseName = $model::getDatabaseName();
       $this->resources[$model] = Connector::createFor(

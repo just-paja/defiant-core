@@ -6,7 +6,7 @@ class Model extends Module {
   const callsign = 'model';
 
   public function list($cmd = null) {
-    $modelList = \Defiant\Model::getAllModels();
+    $modelList = \Defiant\Model::getAncestors();
     foreach ($modelList as $model) {
       echo $model."\n";
     }

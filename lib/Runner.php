@@ -234,3 +234,5 @@ class Runner {
     }
   }
 }
+
+require_once 'Model/CsrfToken.php';

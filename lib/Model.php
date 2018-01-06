@@ -5,7 +5,7 @@ namespace Defiant;
 define('MODEL_INSERT', 'MODEL_INSERT');
 define('MODEL_UPDATE', 'MODEL_UPDATE');
 
-abstract class Model {
+abstract class Model extends \Defiant\Resource\ClassCollector {
   protected static $connectors = [];
   protected static $databaseName = null;
   protected static $fields = [];
@@ -26,19 +26,6 @@ abstract class Model {
 
   public function __set($fieldName, $value) {
     return $this->setValue($fieldName, $value);
-  }
-
-  public static function getAllModels() {
-    $classes = get_declared_classes();
-    $models = [];
-
-    foreach ($classes as $class) {
-      if (is_subclass_of($class, get_class())) {
-        $models[] = $class;
-      }
-    }
-
-    return $models;
   }
 
   public static function getConnector() {

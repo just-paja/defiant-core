@@ -2,7 +2,7 @@
 
 namespace Defiant\Model;
 
-class Field {
+abstract class Field extends \Defiant\Resource\ClassCollector {
   const dbType = null;
   const isUnsigned = null;
   protected $default = null;
@@ -22,19 +22,17 @@ class Field {
   }
 
   public static function getFieldTypeByDef($def) {
-    $classes = get_declared_classes();
+    $classes = static::getAncestors();
     $types = [];
 
     foreach ($classes as $class) {
-      if (is_subclass_of($class, 'Defiant\Model\Field')) {
-        if ($class::dbType == $def['dbType']) {
-          if (isset($def['isUnsigned'])) {
-            if ($class::isUnsigned === $def['isUnsigned']) {
-              $types[] = $class;
-            }
-          } else {
+      if ($class::dbType == $def['dbType']) {
+        if (isset($def['isUnsigned'])) {
+          if ($class::isUnsigned === $def['isUnsigned']) {
             $types[] = $class;
           }
+        } else {
+          $types[] = $class;
         }
       }
     }

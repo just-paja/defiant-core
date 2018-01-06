@@ -5,7 +5,7 @@ namespace Defiant\Console;
 class Dispatcher {
   public static function getCommands() {
     \Defiant\Runner::getConfig();
-    $modules = Module::getAllConsoleModules();
+    $modules = Module::getAncestors();
     $commands = [];
 
     foreach ($modules as $module) {
@@ -21,7 +21,7 @@ class Dispatcher {
   }
 
   public static function getModule($callsign) {
-    $modules = Module::getAllConsoleModules();
+    $modules = Module::getAncestors();
     $commands = [];
 
     foreach ($modules as $moduleClass) {

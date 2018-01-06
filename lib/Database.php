@@ -51,7 +51,7 @@ abstract class Database {
   }
 
   public function getSchemaTables() {
-    $models = Model::getAllModels();
+    $models = Model::getAncestors();
     $tables = [];
     foreach ($models as $model) {
       $tables[] = $this->createTable($model);

@@ -1,5 +1,6 @@
 <?php
 
+require_once 'DateField.php';
 require_once 'DatetimeField.php';
 require_once 'EmailField.php';
 require_once 'ForeignKeyField.php';

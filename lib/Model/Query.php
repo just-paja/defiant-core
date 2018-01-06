@@ -317,4 +317,20 @@ class Query {
     $this->joins[] = $spec;
     return $this;
   }
+
+  public function clone() {
+    $item = new self($this->database, $this->model);
+    $item->distinct = $item->distinct;
+    $item->mode = $item->mode;
+    $item->database = $item->database;
+    $item->filter = $item->filter;
+    $item->joins = $item->joins;
+    $item->jumps = $item->jumps;
+    $item->limit = $item->limit;
+    $item->model = $item->model;
+    $item->offset = $item->offset;
+    $item->orderBy = $item->orderBy;
+    $item->aliasCount = $item->aliasCount;
+    return $item;
+  }
 }

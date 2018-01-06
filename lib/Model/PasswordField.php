@@ -7,7 +7,7 @@ class PasswordField extends VarcharField {
     return sha1($value);
   }
 
-  public function formatValue($value) {
+  public function serialize($value, $oppoturnity = null) {
     return static::hashValue($value);
   }
 }

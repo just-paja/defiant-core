@@ -262,3 +262,5 @@ abstract class Model extends \Defiant\Resource\ClassCollector {
     return $array;
   }
 }
+
+require_once 'Model/fields.php';

@@ -13,6 +13,7 @@ class ForeignKeyField extends FieldSet implements CustomSaveField {
       $keyFieldName => [
         'type' => '\Defiant\Model\IntegerField',
         'default' => $this->default,
+        'isNull' => $this->isNull,
       ],
     ];
   }

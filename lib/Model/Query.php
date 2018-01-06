@@ -70,6 +70,10 @@ class Query {
     return $this;
   }
 
+  public function limitByPage($page, $size = 20) {
+    return $this->limit($size * $page, $size * $page + $size);
+  }
+
   protected function extend(array $data) {
     $lastJump = $this->getLastJump();
     if ($lastJump) {

@@ -41,6 +41,10 @@ class Request {
     return $this->getBodyParam(static::CSRF_FIELD_NAME, null);
   }
 
+  public function getMethod() {
+    return $this->method;
+  }
+
   public function getQuery() {
     return $this->query;
   }

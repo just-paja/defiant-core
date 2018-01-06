@@ -53,6 +53,10 @@ class Request {
     return $this->params;
   }
 
+  public function getParam($key, $defaultValue) {
+    return $this->getParamFrom($this->params, $key, $defaultValue);
+  }
+
   public function getParamFrom(&$source, $key, $defaultValue) {
     if (!empty($source[$key])) {
       return $source[$key];

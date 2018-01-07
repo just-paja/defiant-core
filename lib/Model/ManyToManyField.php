@@ -4,6 +4,7 @@ namespace Defiant\Model;
 
 class ManyToManyField extends FieldSet implements CustomSaveField {
   protected $trough;
+  protected $isNull = true;
 
   public function expandFields() {
     return [
@@ -33,9 +34,14 @@ class ManyToManyField extends FieldSet implements CustomSaveField {
 
   public function saveValue(\Defiant\Model $instance) {
     $name = $this->name;
-    $value = $instance->$name;
-    if (!is_array($value)) {
+
+    if (!$instance->hasValue($name)) {
       return;
+    }
+
+    $value = $instance->getFieldValueDirect($name);
+    if (!is_array($value)) {
+      return null;
     }
     $dbValue = $this->valueToIds($this->getValue($instance, null)->all());
     $troughConnector = $this->trough::getConnector();
@@ -80,5 +86,9 @@ class ManyToManyField extends FieldSet implements CustomSaveField {
 
   public function getTroughModel() {
     return $this->trough;
+  }
+
+  public function serialize($value, $opportunity = null) {
+    return $this->valueToIds($value->all());
   }
 }

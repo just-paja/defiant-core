@@ -103,4 +103,13 @@ abstract class Model extends \Defiant\Model\ModelAccessor {
     }
     return $array;
   }
+
+  public function serializeFields($fieldNames) {
+    $values = [];
+    foreach ($fieldNames as $fieldName) {
+      $field = $this->getField($fieldName);
+      $values[$fieldName] = $field->serialize($this->$fieldName);
+    }
+    return $values;
+  }
 }

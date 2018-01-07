@@ -33,6 +33,10 @@ class Request {
     return in_array($this->method, static::CSRF_PROTECTED_METHODS);
   }
 
+  public function getBody() {
+    return $this->body;
+  }
+
   public function getBodyParam($key, $defaultValue) {
     return static::getParamFrom($this->body, $key, $defaultValue);
   }

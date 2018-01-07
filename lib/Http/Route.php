@@ -175,7 +175,7 @@ class Route {
     foreach ($params as $paramName => $paramValue) {
       if (is_array($paramValue)) {
         foreach ($paramValue as $value) {
-          $append[] = urlencode($paramName).'[]='.urlencode($value);
+          $append[] = urlencode($paramName.'[]').'='.urlencode($value);
         }
       } else {
         $append[] = urlencode($paramName).'='.urlencode($paramValue);

@@ -25,7 +25,14 @@ class Route {
   }
 
   public function matches($path, $method = null) {
-    if ($method && $this->method !== $method) {
+    if (
+      $method &&
+      (is_array($this->method) ? !in_array($method, $this->method) : $this->method !== $method)
+    ) {
+      if (is_array($this->method)) {
+        error_log(json_encode($this->method).'::'.$method);
+        error_log(in_array($method, $this->method));
+      }
       return false;
     }
     $matches = [];

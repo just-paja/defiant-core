@@ -282,12 +282,16 @@ class Query {
     $cols = explode(',', $this->orderBy);
     $query = [];
     foreach ($cols as $col) {
+      $col = trim($col);
+      $mode = 'ASC';
       if (strpos($col, '-') === 0) {
-        $col = substr($col, 1).' DESC';
-      } else {
-        $col = $col.' ASC';
+        $col = substr($col, 1);
+        $mode = 'DESC';
       }
-      $query[] = $col;
+      if (strpos($col, '.') === false) {
+        $col = '`'.$this->model::getTableName().'`.'.$col;
+      }
+      $query[] = $col.' '.$mode;
     }
     return implode(',', $query);
   }

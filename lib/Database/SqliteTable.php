@@ -83,11 +83,18 @@ class SqliteTable extends \Defiant\Database\Table {
     return 'PRAGMA FOREIGN_KEYS='.($enabled ? 'on':'off');
   }
 
-  public static function getCopyDataQuery($srcTable, $destTable, $copyCols) {
-    $cols = implode(',', $copyCols);
+  public static function getCopyDataQuery($srcTable, $destTable, $copyCols, $defaultsCols = []) {
+    $defaultNames = [];
+    $defaultValues = [];
+    foreach ($defaultsCols as $defaultsCol) {
+      $defaultNames[] = $defaultsCol->getName();
+      $defaultValues[] = "'".$defaultsCol->getDefault()."' as `".$defaultsCol->getName()."`";
+    }
+    $colNames = implode(',', array_merge($copyCols, $defaultNames));
+    $colValues = implode(',', array_merge($copyCols, $defaultValues));
     return implode("\n", [
-      'INSERT INTO '.$destTable.' ('.$cols.')',
-      '  SELECT '.$cols,
+      'INSERT INTO '.$destTable.' ('.$colNames.')',
+      '  SELECT '.$colValues,
       '  FROM '.$srcTable,
     ]);
   }
@@ -114,6 +121,7 @@ class SqliteTable extends \Defiant\Database\Table {
     $tempName = $this->name.'_MOD';
     $specs = $this->getColumnSpecs();
     $copyCols = [];
+    $defaultsCols = [];
 
     foreach ($this->columnsKeep as $col) {
       $copyCols[] = $col->getName();
@@ -124,7 +132,12 @@ class SqliteTable extends \Defiant\Database\Table {
       static::getDropQuery($tempName, true),
       static::getRenameQuery($this->name, $tempName),
       static::getCreateQuery($this->name, $specs),
-      static::getCopyDataQuery($tempName, $this->name, static::getExistingColumns($copyCols)),
+      static::getCopyDataQuery(
+        $tempName,
+        $this->name,
+        static::getExistingColumns($copyCols),
+        $this->columnsAdd
+      ),
       static::getDropQuery($tempName),
       static::getToggleForeignKeysQuery(true),
     ];

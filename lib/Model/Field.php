@@ -116,4 +116,8 @@ abstract class Field extends \Defiant\Resource\ClassCollector {
   public function formatValue($value) {
     return $value;
   }
+
+  public function validateValue($value) {
+    return true;
+  }
 }

@@ -12,9 +12,9 @@ class DatetimeField extends Field {
       if ($this->setNowOnInsert && $opportunity === MODEL_INSERT) {
         return (new \DateTime())->format('c');
       }
-      if ($this->setNowOnUpdate && ($opportunity === MODEL_UPDATE || $opportunity === MODEL_INSERT)) {
-        return (new \DateTime())->format('c');
-      }
+    }
+    if ($this->setNowOnUpdate && ($opportunity === MODEL_UPDATE || $opportunity === MODEL_INSERT)) {
+      return (new \DateTime())->format('c');
     }
     return $value;
   }

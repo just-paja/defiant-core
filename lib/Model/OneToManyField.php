@@ -5,6 +5,7 @@ namespace Defiant\Model;
 class OneToManyField extends FieldSet {
   protected $model;
   protected $fk;
+  protected $isNull = true;
 
   public function expandFields() {
     return [

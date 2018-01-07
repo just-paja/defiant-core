@@ -233,15 +233,16 @@ class Query {
         }
       }
       if ($operation == static::OPERATION_CONTAINS) {
-        foreach ($value as $itemId) {
+        foreach ($value as $key => $itemId) {
+          $fieldDescId = $fieldDesc.'_'.$key;
           $field = $this->model::getField($fieldName);
           $this->joinViaForeignKey(
             $field->getTroughModel(),
             $field->getFkFieldName(),
             true,
-            [$field->getViaFieldName() => ':'.$fieldDesc]
+            [$field->getViaFieldName() => ':'.$fieldDescId]
           );
-          $queryParams[$fieldDesc] = $itemId;
+          $queryParams[$fieldDescId] = $itemId;
         }
       }
     } else {

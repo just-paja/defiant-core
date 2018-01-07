@@ -135,6 +135,10 @@ abstract class ModelAccessor extends \Defiant\Resource\ClassCollector {
     return false;
   }
 
+  public function hasChanged() {
+    return $this->changed;
+  }
+
   public function hasValue($fieldName) {
     return isset($this->data[$fieldName]);
   }

@@ -18,7 +18,6 @@ class SqliteTable extends \Defiant\Database\Table {
           $column['isUnsigned'] = true;
         }
       }
-
       $def = [
         "dbType" => $type,
         "default" => $column['dflt_value'],
@@ -31,13 +30,14 @@ class SqliteTable extends \Defiant\Database\Table {
         $def['isUnsigned'] = $column['isUnsigned'];
       }
       if (in_array($type, [
+        'TINYINT',
         'INT',
         'INTEGER',
       ])) {
         if (!isset($def['isUnsigned'])) {
           $def['isUnsigned'] = false;
         }
-        if ($def['default']) {
+        if (isset($def['default'])) {
           $def['default'] = intval($def['default']);
         }
       }
@@ -56,7 +56,7 @@ class SqliteTable extends \Defiant\Database\Table {
       $col->isPrimary() ? 'PRIMARY KEY':'',
       $col->isUnique() && !$col->isPrimary() ? 'UNIQUE':'',
       $col->isAutoincrement() ? 'AUTOINCREMENT' : '',
-      $col->getDefault() ? 'DEFAULT '.$col->getDefault() : '',
+      $col->hasDefault() ? 'DEFAULT '.$col->getDefault() : '',
     )));
   }
 
@@ -65,6 +65,7 @@ class SqliteTable extends \Defiant\Database\Table {
     foreach ($this->getColumns() as $col) {
       $colSpecs[] = $this->getColumnSpec($col);
     }
+    // var_dump($colSpecs);
     return $colSpecs;
   }
 

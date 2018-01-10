@@ -54,6 +54,9 @@ class Column {
   }
 
   public function getDefault() {
+    if (is_bool($this->default)) {
+      return $this->default ? 1 : 0;
+    }
     return $this->default;
   }
 
@@ -161,6 +164,10 @@ class Column {
     )));
 
     return trim($sq);
+  }
+
+  public function hasDefault() {
+    return isset($this->default);
   }
 
   public function isAutoincrement() {

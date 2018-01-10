@@ -36,19 +36,23 @@ abstract class ModelAccessor extends \Defiant\Resource\ClassCollector {
   }
 
   public static function getFields() {
+    $className = get_called_class();
     return array_merge([
       new IntegerField('id', [
-        "isPrimary" => true,
+        'carrier' => $className,
         "isAutoincrement" => true,
+        "isPrimary" => true,
       ]),
     ], static::getFieldsFromDefinition(static::$fields, false), [
       new DatetimeField('createdAt', [
-        "setNowOnInsert" => true,
+        'carrier' => $className,
         "isNull" => true,
+        "setNowOnInsert" => true,
       ]),
       new DatetimeField('updatedAt', [
-        "setNowOnUpdate" => true,
+        'carrier' => $className,
         "isNull" => true,
+        "setNowOnUpdate" => true,
       ]),
     ]);
   }
@@ -58,20 +62,24 @@ abstract class ModelAccessor extends \Defiant\Resource\ClassCollector {
   }
 
   public static function getExpandedFields() {
+    $className = get_called_class();
     $fields = array_merge([
       new IntegerField('id', [
+        'carrier' => $className,
         "isPrimary" => true,
         "isAutoincrement" => true,
       ]),
     ], static::getFieldsFromDefinition(static::$fields, true));
 
     $fields[] = new DatetimeField('createdAt', [
-      "setNowOnInsert" => true,
+      'carrier' => $className,
       "isNull" => true,
+      "setNowOnInsert" => true,
     ]);
     $fields[] = new DatetimeField('updatedAt', [
-      "setNowOnUpdate" => true,
+      'carrier' => $className,
       "isNull" => true,
+      "setNowOnUpdate" => true,
     ]);
     return $fields;
   }
@@ -122,7 +130,7 @@ abstract class ModelAccessor extends \Defiant\Resource\ClassCollector {
     if (is_array($fieldType)) {
       return static::getFieldFromType($fieldName, $fieldType['type'], $fieldType);
     }
-    return new $fieldType($fieldName, $fieldDef);
+    return new $fieldType($fieldName, $fieldDef, get_called_class());
   }
 
   public static function hasField($fieldName) {
@@ -166,9 +174,9 @@ abstract class ModelAccessor extends \Defiant\Resource\ClassCollector {
       null;
   }
 
-  public function setState(array $data) {
+  public function setState(array $data, $noFormat = true) {
     foreach ($data as $fieldName => $value) {
-      $this->setValue($fieldName, $value, true);
+      $this->setValue($fieldName, $value, $noFormat);
     }
     return $this;
   }

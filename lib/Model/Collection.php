@@ -8,12 +8,15 @@ class Collection extends \Defiant\Resource\Collection {
   ];
 
   protected $databases;
+  protected $runner;
 
   public function __construct(
     \Defiant\Database\Collection $databases,
+    \Defiant\Runner $runner,
     $resources = null
   ) {
     $this->databases = $databases;
+    $this->runner = $runner;
     parent::__construct($resources);
   }
 
@@ -40,7 +43,8 @@ class Collection extends \Defiant\Resource\Collection {
       $databaseName = $model::getDatabaseName();
       $this->resources[$model] = Connector::createFor(
         $model,
-        $this->databases->$databaseName
+        $this->databases->$databaseName,
+        $this->runner
       );
     }
   }

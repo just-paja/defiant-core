@@ -5,6 +5,7 @@ namespace Defiant\Model;
 abstract class Field extends \Defiant\Resource\ClassCollector {
   const dbType = null;
   const isUnsigned = null;
+  protected $carrier = null;
   protected $default = null;
   protected $isAutoincrement = false;
   protected $isNull = false;
@@ -59,8 +60,9 @@ abstract class Field extends \Defiant\Resource\ClassCollector {
   }
 
 
-  public function __construct($name, array $args = array()) {
+  public function __construct($name, array $args = array(), $carrier = null) {
     $this->name = $name;
+    $this->carrier = $carrier;
 
     if ($args) {
       foreach ($args as $arg=>$value) {

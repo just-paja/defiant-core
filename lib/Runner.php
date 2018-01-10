@@ -13,6 +13,7 @@ class Runner {
     'pug' => '\Defiant\View\PugRenderer',
     'jade' => '\Defiant\View\PugRenderer',
   ];
+  protected $secretKey = null;
   protected $statusMessages = [
     100 => 'Continue',
     101 => 'Switching Protocols',
@@ -75,7 +76,7 @@ class Runner {
   public function __construct($config) {
     $this->router = new Http\Router();
     $this->databases = new Database\Collection();
-    $this->models = new Model\Collection($this->databases);
+    $this->models = new Model\Collection($this->databases, $this);
 
     if (isset($config['routes'])) {
       $this->router->replace($config['routes']);
@@ -111,6 +112,10 @@ class Runner {
 
     if (isset($config['userClass'])) {
       $this->userClass = $config['userClass'];
+    }
+
+    if (isset($config['secretKey'])) {
+      $this->secretKey = $config['secretKey'];
     }
   }
 
@@ -203,6 +208,10 @@ class Runner {
       header($header.': '.$value);
     }
     echo $content;
+  }
+
+  public function getSecretKey() {
+    return $this->secretKey;
   }
 
   public function getRenderer($templateSuffix) {

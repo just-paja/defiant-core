@@ -6,21 +6,23 @@ class Connector {
   protected $database;
   protected $fields;
   protected $model;
+  protected $runner;
 
-  public static function createFor($model, \Defiant\Database $database) {
+  public static function createFor($model, \Defiant\Database $database, \Defiant\Runner $runner) {
     try {
      return $model::getConnector();
    } catch(\Defiant\Model\ConnectorError $e) {
-      $connector = new static($model, $database);
+      $connector = new static($model, $database, $runner);
       $model::setConnector($connector);
       return $connector;
     }
   }
 
-  public function __construct($model, \Defiant\Database $database = null) {
+  public function __construct($model, \Defiant\Database $database = null, \Defiant\Runner $runner = null) {
     $this->database = $database;
     $this->model = $model;
     $this->fields = $model::getExpandedFields();
+    $this->runner = $runner;
   }
 
   public function __get($attr) {
@@ -30,7 +32,7 @@ class Connector {
     return $this->$attr;
   }
 
-  public function create($data) {
+  public function create(array $data = []) {
     $model = get_called_class();
     $item = new $this->model($data);
     return $item;
@@ -38,10 +40,10 @@ class Connector {
 
   public function fetchAndUpdate($data) {
     $item = $this->getQuery()->find($data['id']);
-    if ($item) {
-      return $item->setState($data);
+    if (!$item) {
+      $item = $this->create();
     }
-    return $this->create($data);
+    return $item->setState($data, false);
   }
 
   public function getModel() {
@@ -57,5 +59,9 @@ class Connector {
       $this->database,
       $this->model
     );
+  }
+
+  public function getRunner() {
+    return $this->runner;
   }
 }

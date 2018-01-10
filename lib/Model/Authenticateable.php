@@ -17,7 +17,8 @@ abstract class Authenticateable extends \Defiant\Model {
       throw new \Defiant\Model\Error(sprintf('User %s not found', $username));
     }
 
-    $hashedPassword = \Defiant\Model\PasswordField::hashValue($password);
+    $field = $user->getField(static::FIELD_PASSWORD);
+    $hashedPassword = $field->hashValue($password);
 
     if ($user->password !== $hashedPassword) {
       throw new \Defiant\Model\FieldError(sprintf('Invalid password'));

@@ -96,7 +96,7 @@ abstract class Model extends \Defiant\Model\ModelAccessor {
         continue;
       }
       $fieldName = $field->getName();
-      $value = $field->serialize($this->$fieldName, $opportunity);
+      $value = $field->serialize($this->getFieldValue($fieldName), $opportunity);
       if (isset($value)) {
         $array[$fieldName] = $value;
       }

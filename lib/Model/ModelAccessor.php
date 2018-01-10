@@ -8,11 +8,12 @@ define('MODEL_UPDATE', 'MODEL_UPDATE');
 abstract class ModelAccessor extends \Defiant\Resource\ClassCollector {
   protected static $fields = [];
   protected static $fieldTypes;
-  protected $data;
   protected $changed = false;
+  protected $id;
+  protected $createdAt;
+  protected $updatedAt;
 
   public function __construct(array $data = []) {
-    $this->data = [];
     if ($data) {
       $this->setState($data);
     }
@@ -32,7 +33,7 @@ abstract class ModelAccessor extends \Defiant\Resource\ClassCollector {
   }
 
   public function __unset($fieldName) {
-    unset($this->data[$fieldName]);
+    unset($this->$fieldName);
   }
 
   public static function getFields() {
@@ -140,7 +141,7 @@ abstract class ModelAccessor extends \Defiant\Resource\ClassCollector {
   }
 
   public function hasValue($fieldName) {
-    return isset($this->data[$fieldName]);
+    return isset($this->$fieldName);
   }
 
   public function getFieldValue($fieldName) {
@@ -151,7 +152,7 @@ abstract class ModelAccessor extends \Defiant\Resource\ClassCollector {
     }
 
     return $field->getValue($this, $this->hasValue($fieldName) ?
-      $this->data[$fieldName] :
+      $this->$fieldName :
       null
     );
   }
@@ -162,7 +163,7 @@ abstract class ModelAccessor extends \Defiant\Resource\ClassCollector {
     }
 
     return $this->hasValue($fieldName) ?
-      $this->data[$fieldName] :
+      $this->$fieldName :
       null;
   }
 
@@ -181,11 +182,11 @@ abstract class ModelAccessor extends \Defiant\Resource\ClassCollector {
   public function setValue($fieldName, $value, $noFormat = false) {
     $field = $this->getField($fieldName);
     if ($field) {
-      if (!$this->hasValue($fieldName) || $this->data[$fieldName] !== $value) {
+      if (!$this->hasValue($fieldName) || $this->$fieldName !== $value) {
         if ($noFormat) {
-          $this->data[$fieldName] = $value;
+          $this->$fieldName = $value;
         } else {
-          $this->data[$fieldName] = $field->formatValue($value);
+          $this->$fieldName = $field->formatValue($value);
         }
         $this->changed = true;
       }

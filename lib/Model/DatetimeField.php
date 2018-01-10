@@ -8,7 +8,11 @@ class DatetimeField extends Field {
   protected $setNowOnUpdate = false;
 
   public function serialize($value, $opportunity = null) {
-    if (!$value) {
+    if ($value) {
+      if ($value instanceof \DateTime) {
+        $value = $value->format('c');
+      }
+    } else {
       if ($this->setNowOnInsert && $opportunity === MODEL_INSERT) {
         return (new \DateTime())->format('c');
       }

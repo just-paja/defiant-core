@@ -148,7 +148,7 @@ abstract class ModelAccessor extends \Defiant\Resource\ClassCollector {
   }
 
   public function hasValue($fieldName) {
-    return isset($this->data[$fieldName]);
+    return array_key_exists($fieldName, $this->data);
   }
 
   public function getFieldValue($fieldName) {

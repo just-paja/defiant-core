@@ -23,6 +23,11 @@ class ServerError extends \Defiant\View {
     return $this->renderTemplate($this->templatesPath.'/400.html', $context, true);
   }
 
+  public function unauthorized(array $context = []) {
+    $this->status = 401;
+    return $this->renderTemplate($this->templatesPath.'/401.html', $context, true);
+  }
+
   public function fatalError(array $context = []) {
     $this->status = 500;
     return $this->renderTemplate($this->templatesPath.'/500.html', $context, true);

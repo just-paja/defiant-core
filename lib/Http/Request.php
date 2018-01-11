@@ -9,6 +9,7 @@ class Request {
   public $method;
   public $path;
   public $host;
+  protected $pathFull;
   protected $params = [];
   protected $query = [];
 
@@ -20,7 +21,8 @@ class Request {
     $this->method = strtolower($server['REQUEST_METHOD']);
     $this->host = $server['HTTP_HOST'];
     $this->protocol = $this->isSsl($server) ? 'https' : 'http';
-    $pathSplit = explode('?', $server['REQUEST_URI']);
+    $this->pathFull = $server['REQUEST_URI'];
+    $pathSplit = explode('?', $this->pathFull);
     $this->body = $post;
     $this->session = new RequestSession($session);
     $this->path = $pathSplit[0];
@@ -66,6 +68,14 @@ class Request {
       return $source[$key];
     }
     return $defaultValue;
+  }
+
+  public function getPath() {
+    return $this->path;
+  }
+
+  public function getPathFull() {
+    return $this->pathFull;
   }
 
   protected function isSsl($server) {

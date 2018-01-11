@@ -60,6 +60,7 @@ class Runner {
   protected $viewForbidden = ['\Defiant\View\ServerError', 'forbidden'];
   protected $viewFatalError = ['\Defiant\View\ServerError', 'fatalError'];
   protected $viewNotFound = ['\Defiant\View\ServerError', 'notFound'];
+  protected $viewUnauthorized = ['\Defiant\View\ServerError', 'unauthorized'];
 
   public static function getConfig() {
     if (file_exists('defiantConfig.php')) {
@@ -96,6 +97,10 @@ class Runner {
 
     if (isset($config['viewNotFound'])) {
       $this->viewNotFound = $config['viewNotFound'];
+    }
+
+    if (isset($config['viewUnauthorized'])) {
+      $this->viewUnauthorized = $config['viewUnauthorized'];
     }
 
     if (isset($config['badRequest'])) {
@@ -139,6 +144,8 @@ class Runner {
       $this->serveResponseForRequest($request);
     } catch (\Defiant\Http\NotFound $exception) {
       $this->resolveCallback($this->viewNotFound, $request);
+    } catch (\Defiant\Http\Unauthorized $exception) {
+      $this->resolveCallback($this->viewUnauthorized, $request);
     } catch (\Defiant\Http\BadRequest $exception) {
       $this->resolveCallback($this->viewBadRequest, $request, [
         "exception" => $exception,
@@ -165,6 +172,8 @@ class Runner {
         $viewMethod = $this->resolveCallbackViewMethod($route->viewCallback);
         $pageContent = $this->resolveView($view, $viewMethod);
         return $this->serveView($view, $pageContent);
+      } else {
+        throw new Http\Unauthorized();
       }
     }
 

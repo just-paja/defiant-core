@@ -53,20 +53,40 @@ class ForeignKeyField extends FieldSet implements CustomSaveField {
 
   public function saveValue(\Defiant\Model $instance) {
     $name = $this->name;
+    $value = null;
+    $keyFieldName = $this->getKeyFieldName();
 
-    if (!$instance->hasValue($name)) {
+    if ($instance->hasValue($name)) {
+      $value = $instance->$name;
+    } elseif ($instance->hasValue($keyFieldName)) {
+      $value = $instance->$keyFieldName;
+    } else {
       return;
     }
-
-    $value = $instance->$name;
 
     if (!($value instanceof $this->model)) {
       return;
     }
 
-    $keyFieldName = $this->getKeyFieldName();
     $instance->$keyFieldName = $value->id;
     unset($instance->$name);
     $instance->save();
+  }
+
+  public function validateValue($value) {
+    if ($value) {
+      $model = $this->model;
+      $connector = $model::getConnector();
+      $object = $connector->objects->find($value);
+
+      if (!$object) {
+        throw new \Defiant\View\ValidationError(sprintf(
+          '%s of id "%s" does not exist.',
+          $model,
+          $value
+        ), $this->name);
+      }
+    }
+    return true;
   }
 }

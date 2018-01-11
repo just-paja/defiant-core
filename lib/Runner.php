@@ -160,7 +160,7 @@ class Runner {
 
     if ($route) {
       $request->setParams($route->getParams());
-      $view = $this->resolveCallbackView($route->viewCallback, $request);
+      $view = $this->resolveCallbackView($route->viewCallback, $request, $route);
       if ($view->isAccessible()) {
         $viewMethod = $this->resolveCallbackViewMethod($route->viewCallback);
         $pageContent = $this->resolveView($view, $viewMethod);
@@ -171,12 +171,12 @@ class Runner {
     throw new Http\NotFound();
   }
 
-  public function resolveCallbackView($viewCallback, $request) {
+  public function resolveCallbackView($viewCallback, $request, $route = null) {
     $className = $viewCallback;
     if (is_array($viewCallback)) {
       $className = $viewCallback[0];
     }
-    return new $className($this, $request);
+    return new $className($this, $request, $route);
   }
 
   public function resolveCallbackViewMethod($viewCallback) {

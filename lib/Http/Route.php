@@ -45,6 +45,10 @@ class Route {
     return true;
   }
 
+  public function getName() {
+    return $this->name;
+  }
+
   public function getParams() {
     return $this->params;
   }

@@ -14,7 +14,7 @@ class View {
   protected $status = 200;
   protected $user = null;
 
-  public function __construct(Runner $runner = null, Http\Request $request = null) {
+  public function __construct(Runner $runner = null, Http\Request $request = null, Http\Route $route = null) {
     if ($runner) {
       $this->runner = $runner;
       $this->models = $runner->models;
@@ -26,6 +26,7 @@ class View {
       $this->protocol = $request->protocol;
       $this->request = $request;
     }
+    $this->route = $route;
   }
 
   public function addHeader($header, $value) {
@@ -38,6 +39,14 @@ class View {
 
   public function getParam($name) {
     return isset($this->params[$name]) ? $this->params[$name] : null;
+  }
+
+  public function getRoute() {
+    return $this->route;
+  }
+
+  public function getRouteName() {
+    return $this->getRoute()->getName();
   }
 
   public function getStatus() {
@@ -80,9 +89,11 @@ class View {
       if (!($renderer instanceof \Defiant\View\Renderer)) {
         throw new Error(sprintf('Renderer %s does not inherit from Defiant\\View\\Renderer', get_class($renderer)));
       }
+      $view = $this;
       $context['request'] = $this->request;
       $context['router'] = $this->runner->getRouter();
       $context['user'] = $this->getUser();
+      $context['view'] = $view;
       return $renderer->renderFile($template, $context);
     }
 

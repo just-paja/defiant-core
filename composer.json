@@ -1,7 +1,7 @@
 {
   "name": "just-paja/defiant",
   "description": "Tiny PHP framework not meant for production use",
-  "licesnse": "MIT",
+  "license": "MIT",
   "authors": [
     {
       "name": "Pavel Žák",

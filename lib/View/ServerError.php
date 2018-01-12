@@ -32,4 +32,8 @@ class ServerError extends \Defiant\View {
     $this->status = 500;
     return $this->renderTemplate($this->templatesPath.'/500.html', $context, true);
   }
+
+  public function view(array $context = []) {
+    return $this->fatalError($context);
+  }
 }

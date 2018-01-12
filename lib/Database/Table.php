@@ -57,8 +57,9 @@ abstract class Table {
     return true;
   }
 
-  public function loadModelFields(): void {
-    $this->fields = $this->model::getExpandedFields();
+  public function loadModelFields() {
+    $model = $this->model;
+    $this->fields = $model::getExpandedFields();
   }
 
   public function findFieldByName($name) {

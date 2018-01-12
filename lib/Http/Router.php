@@ -51,6 +51,10 @@ class Router {
     throw new RoutingError(sprintf('Path specified as %s was not found', $name));
   }
 
+  public function getUrlPrefix() {
+    return $this->urlPrefix;
+  }
+
   public function replace($routes) {
     $this->routes = [];
     foreach ($routes as $route) {

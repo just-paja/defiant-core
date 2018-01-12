@@ -4,6 +4,7 @@ namespace Defiant\Http;
 
 class Router {
   private $routes;
+  protected $urlPrefix = '';
 
   public function __construct($routes = null) {
     $this->routes = [];
@@ -13,6 +14,7 @@ class Router {
   }
 
   public function getRouteFromPath($path, $method = null) {
+    $path = substr($path, strlen($this->urlPrefix));
     foreach ($this->routes as $route) {
       if ($route->matches($path, $method)) {
         return $route;
@@ -44,7 +46,7 @@ class Router {
       }
     }
     if ($resolvedRoute) {
-      return $route->getTranslatedPath($params, $modifiers);
+      return $this->urlPrefix.$route->getTranslatedPath($params, $modifiers);
     }
     throw new RoutingError(sprintf('Path specified as %s was not found', $name));
   }
@@ -59,5 +61,9 @@ class Router {
         isset($route[3]) ? $route[3] : null
       );
     }
+  }
+
+  public function setUrlPrefix($urlPrefix) {
+    $this->urlPrefix = $urlPrefix;
   }
 }

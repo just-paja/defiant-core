@@ -61,6 +61,7 @@ class Runner {
   protected $viewFatalError = ['\Defiant\View\ServerError', 'fatalError'];
   protected $viewNotFound = ['\Defiant\View\ServerError', 'notFound'];
   protected $viewUnauthorized = ['\Defiant\View\ServerError', 'unauthorized'];
+  protected $urlPrefix = '';
 
   public static function getConfig() {
     if (file_exists('defiantConfig.php')) {
@@ -121,6 +122,11 @@ class Runner {
 
     if (isset($config['secretKey'])) {
       $this->secretKey = $config['secretKey'];
+    }
+
+    if (isset($config['urlPrefix'])) {
+      $this->urlPrefix = $config['urlPrefix'];
+      $this->router->setUrlPrefix($this->urlPrefix);
     }
   }
 

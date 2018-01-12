@@ -216,7 +216,6 @@ class Runner {
   public function serveView(View $view, $content) {
     $status = $view->getStatus();
     $headers = $view->getHeaders();
-    ob_end_clean();
     header('HTTP/1.1 '.$status.' '.$this->statusMessages[$status]);
 
     foreach ($headers as $header => $value) {

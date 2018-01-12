@@ -3,8 +3,12 @@
 namespace Defiant\Model;
 
 class Query {
-  const OPERATION_IN = 'in';
   const OPERATION_CONTAINS = 'contains';
+  const OPERATION_GT = 'gt';
+  const OPERATION_GTE = 'gte';
+  const OPERATION_IN = 'in';
+  const OPERATION_LT = 'lt';
+  const OPERATION_LTE = 'lte';
 
   protected $distinct = false;
   protected $mode = 'select';
@@ -37,7 +41,7 @@ class Query {
   public function count() {
     $this->mode = 'count';
     $data = $this->select()->fetch(\PDO::FETCH_ASSOC);
-    return $data['count'];
+    return (int) $data['count'];
   }
 
   public function distinct($really = true) {
@@ -231,6 +235,22 @@ class Query {
           }
           return '`'.$table.'`.`'.$fieldColumn.'` IN ('.$queryValue.')';
         }
+      }
+      if (in_array($operation, [static::OPERATION_GT, static::OPERATION_GTE, static::OPERATION_LT, static::OPERATION_LTE])) {
+        list($table, $fieldColumn) = $this->resolveColumnAndTable($fieldName);
+        if (!$table) {
+          $table = $baseTableName;
+        }
+        $queryParams[$fieldDesc] = $value;
+        $mark = '>';
+        if ($operation === static::OPERATION_GTE) {
+          $mark = '>=';
+        } elseif ($operation === static::OPERATION_LT) {
+          $mark = '<';
+        } elseif ($operation === static::OPERATION_LTE) {
+          $mark = '<=';
+        }
+        return "`$table`.`$fieldColumn` ".$mark." :$fieldDesc";
       }
       if ($operation == static::OPERATION_CONTAINS) {
         foreach ($value as $key => $itemId) {

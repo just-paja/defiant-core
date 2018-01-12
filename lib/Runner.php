@@ -190,7 +190,7 @@ class Runner {
 
   public function resolveCallbackViewMethod($viewCallback) {
     $methodName = 'view';
-    if (is_array($viewCallback) && $viewCallback[1]) {
+    if (is_array($viewCallback) && !empty($viewCallback[1])) {
       $methodName = $viewCallback[1];
     }
     return $methodName;

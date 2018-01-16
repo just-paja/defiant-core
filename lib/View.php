@@ -54,16 +54,7 @@ class View {
   }
 
   public function getUser() {
-    if (!$this->user) {
-      $userId = $this->request->getUserId();
-      if ($userId) {
-        $this->user = $this->runner
-          ->getUserConnector()
-          ->objects
-          ->find($userId);
-      }
-    }
-    return $this->user;
+    return $this->runner->getUser($this->request);
   }
 
   public function isAccessible() {

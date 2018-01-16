@@ -62,6 +62,7 @@ class Runner {
   protected $viewNotFound = ['\Defiant\View\ServerError', 'notFound'];
   protected $viewUnauthorized = ['\Defiant\View\ServerError', 'unauthorized'];
   protected $urlPrefix = '';
+  protected $user = null;
 
   public static function getConfig() {
     if (file_exists('defiantConfig.php')) {
@@ -178,6 +179,8 @@ class Runner {
         $viewMethod = $this->resolveCallbackViewMethod($route->viewCallback);
         $pageContent = $this->resolveView($view, $viewMethod);
         return $this->serveView($view, $pageContent);
+      } else if ($this->getUser($request)) {
+        throw new Http\Forbidden();
       } else {
         throw new Http\Unauthorized();
       }
@@ -234,6 +237,20 @@ class Runner {
     }
 
     return null;
+  }
+
+  public function getUser($request) {
+    if (!$this->user) {
+      $userId = $request->getUserId();
+      if ($userId) {
+        $this->user = $this
+          ->getUserConnector()
+          ->objects
+          ->find($userId);
+      }
+    }
+    return $this->user;
+
   }
 
   public function getUserClass() {

@@ -16,6 +16,14 @@ class PugRenderer extends Renderer {
     $this->pug->addFilter('csrfTokenField', [$this, 'renderCsrfField']);
   }
 
+  public function getTemplatePath($template) {
+    if (file_exists($template)) {
+      return $template;
+    }
+    return 'templates/'.$template;
+  }
+
+
   public function renderFile($template, array $context = array()) {
     return $this->pug->render($this->getTemplatePath($template), $context);
   }
